@@ -18,5 +18,12 @@ class agent :
 
     def text_surfing(self):
         whole_window = self.n_window*2 + 1
+
+        # 말뭉치에서 array type으로 단어 뭉치 가져오기
         texts = np.array(self.dataproc.read_corpus())
+
+        # 총 단어개수(중복포함) 계산
         n_texts = len(texts)
+
+
+        W_1, W_2, TF, n_word = self.dataproc.build_word_matrix(texts)
