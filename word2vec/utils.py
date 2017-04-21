@@ -2,7 +2,7 @@ class util :
     def __init__(self):
         pass
 
-    # cost functino
+    # cost functinon
     def nce(self, sth):
         return sth
 
