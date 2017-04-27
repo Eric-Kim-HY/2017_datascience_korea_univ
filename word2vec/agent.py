@@ -33,31 +33,32 @@ class agent :
 
     # sampleword : output + negative sample words
     # inputword, sampleword, label vector : np.array, learning_rate : scalar
-    def train(self, input_word, sample_word, label_vector, learning_rate):
+    def train(self, positive_sample, negative_sample, label_vector, learning_rate):
 
         def relu(x):
             output = max(0,x)
             return output
 
-        # input dataset
-        sample_word = input_word + sample_word
+        def softmax(x):
+            e_x = np.exp(x)
+            return e_x / e_x.sum()
 
-        # output dataset
+        # input data (@layer_0)
+        input_sample = positive_sample + negative_sample
 
+        # output data (layer_2 값과 비교할 원래 값, one-hot 형식)
+        input_sample_onehot = label_vector
 
         # forward propagation
-        layer_0 = sample_word                 # 0번째 layer == input matrix
-        layer_1 = np.transpose(layer_0)  # 1번째 layer: layer0에 W_0 행렬곱
-        layer_2 = relu(np.dot(layer_1, dataprocessing.build_word_matrix(self)))  # 2번째 layer: layer1에 W_1 행렬곱
-
-        # calculate error
-        layer_2_error = layer_2 - label_vector  # error는 원래값(label_vector)과의 차이
-
-        layer_1_error = layer_2_error.dot(W_1.T)  # reLU의 미분값은 양의 값에서 항상 1 이므로 'delta = error'
+        layer_0 = input_sample                              # (dim: 1xV)인 input sample을 넣는다
+        positive_sample_vector = layer_0.T.dot(agent.W_1) # positive sample의 벡터값을 리턴한다 (dim: 1xN)
+        layer_1 = positive_sample_vector
+        layer_2 = softmax(relu(np.dot(layer_1, agent.W_2))) # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
 
         # update weight matrix
-        W_1 -= learning_rate * (layer_1.T.dot(layer_2_error))
+        layer_2_error = layer_2 - input_sample_onehot
+        W_2 = W_2 - learning_rate * (layer_1.T.dot(layer_2_error))
+        W_1 = W_1 - learning_rate * 
 
-        #
-        return sample_word
+        return W_1
 
