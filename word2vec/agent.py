@@ -36,23 +36,28 @@ class agent :
     def train(self, input_word, sample_word, label_vector, learning_rate):
 
         def relu(x):
-            return max(0, x)
+            output = max(0,x)
+            return output
+
+        # input dataset
+        sample_word = input_word + sample_word
+
+        # output dataset
+
 
         # forward propagation
-        layer_0 = input_word                  # 0번째 layer == input matrix
-        layer_1 = word_vector  # 1번째 layer: layer0에 W_0 행렬곱
-        layer_2 = relu(np.dot(layer_1, dataprocessing.build_word_matrix()))  # 2번째 layer: layer1에 W_1 행렬곱
+        layer_0 = sample_word                 # 0번째 layer == input matrix
+        layer_1 = np.transpose(layer_0)  # 1번째 layer: layer0에 W_0 행렬곱
+        layer_2 = relu(np.dot(layer_1, dataprocessing.build_word_matrix(self)))  # 2번째 layer: layer1에 W_1 행렬곱
 
         # calculate error
-        layer_2_error = layer_2 - y  # error는 원래값(y)과의 차이
+        layer_2_error = layer_2 - label_vector  # error는 원래값(label_vector)과의 차이
 
         layer_1_error = layer_2_error.dot(W_1.T)  # reLU의 미분값은 양의 값에서 항상 1 이므로 'delta = error'
-
-        #       layer_1_delta = layer_1_error*sig2deriv(layer_1)
 
         # update weight matrix
         W_1 -= learning_rate * (layer_1.T.dot(layer_2_error))
 
         #
-        return updated_sample_word
+        return sample_word
 
