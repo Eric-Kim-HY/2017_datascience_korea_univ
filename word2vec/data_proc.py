@@ -18,7 +18,8 @@ class dataprocessing :
 
     def build_word_matrix(self, tokens, vector_dim):
 
-
+        total_num_words = len(tokens)
+        nltk.probability.ProbDistI
         # build standard word matrix
         word_matrix = pd.DataFrame(index = set(tokens),columns=range(vector_dim), dtype=np.float32)
         #TODO initialization normal (0,0.5)
