@@ -28,7 +28,7 @@ class agent :
         self.n_words = self.W_1.shape[0]
 
         # 랜덤 샘플링할 index 가져오기
-        weigh_idx = self.dataproc.negative_sampling(n_unique_words= self.n_words, n_samples = self.n_sample)
+        weight_idx = self.dataproc.negative_sampling(n_samples = self.n_sample)
 
 
     # sampleword : output + negative sample words
