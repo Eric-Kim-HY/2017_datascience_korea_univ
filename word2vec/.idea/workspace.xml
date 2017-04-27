@@ -40,12 +40,17 @@
         <entry file="file://$PROJECT_DIR$/data_proc.py">
           <provider selected="true" editor-type-id="text-editor">
 <<<<<<< HEAD
+<<<<<<< HEAD
             <state relative-caret-position="571">
               <caret line="35" column="0" lean-forward="true" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
 =======
             <state relative-caret-position="525">
               <caret line="21" column="34" lean-forward="false" selection-start-line="21" selection-start-column="34" selection-end-line="21" selection-end-column="34" />
 >>>>>>> 184ba94d7edbcbd94c6c9b211d9c8c25503a1c71
+=======
+            <state relative-caret-position="675">
+              <caret line="60" column="0" lean-forward="true" selection-start-line="60" selection-start-column="0" selection-end-line="60" selection-end-column="0" />
+>>>>>>> a7db512e2d115be6daa9c633d28f4bef79ba788c
               <folding>
                 <element signature="e#0#11#0" expanded="true" />
               </folding>
@@ -72,9 +77,14 @@
       <file leaf-file-name="agent.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/agent.py">
           <provider selected="true" editor-type-id="text-editor">
+<<<<<<< HEAD
             <state relative-caret-position="653">
               <caret line="59" column="53" lean-forward="true" selection-start-line="59" selection-start-column="53" selection-end-line="59" selection-end-column="53" />
 >>>>>>> 184ba94d7edbcbd94c6c9b211d9c8c25503a1c71
+=======
+            <state relative-caret-position="328">
+              <caret line="46" column="0" lean-forward="true" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
+>>>>>>> a7db512e2d115be6daa9c633d28f4bef79ba788c
               <folding>
                 <element signature="e#0#36#0" expanded="true" />
               </folding>
@@ -144,6 +154,7 @@
     <findStrings>
       <find>dataproc</find>
       <find>alpha</find>
+      <find>len</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -884,8 +895,8 @@
 =======
     <entry file="file://$PROJECT_DIR$/agent.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="653">
-          <caret line="59" column="53" lean-forward="true" selection-start-line="59" selection-start-column="53" selection-end-line="59" selection-end-column="53" />
+        <state relative-caret-position="328">
+          <caret line="46" column="0" lean-forward="true" selection-start-line="46" selection-start-column="0" selection-end-line="46" selection-end-column="0" />
           <folding>
             <element signature="e#0#36#0" expanded="true" />
           </folding>
@@ -896,12 +907,17 @@
     <entry file="file://$PROJECT_DIR$/data_proc.py">
       <provider selected="true" editor-type-id="text-editor">
 <<<<<<< HEAD
+<<<<<<< HEAD
         <state relative-caret-position="571">
           <caret line="35" column="0" lean-forward="true" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
 =======
         <state relative-caret-position="525">
           <caret line="21" column="34" lean-forward="false" selection-start-line="21" selection-start-column="34" selection-end-line="21" selection-end-column="34" />
 >>>>>>> 184ba94d7edbcbd94c6c9b211d9c8c25503a1c71
+=======
+        <state relative-caret-position="675">
+          <caret line="60" column="0" lean-forward="true" selection-start-line="60" selection-start-column="0" selection-end-line="60" selection-end-column="0" />
+>>>>>>> a7db512e2d115be6daa9c633d28f4bef79ba788c
           <folding>
             <element signature="e#0#11#0" expanded="true" />
           </folding>
