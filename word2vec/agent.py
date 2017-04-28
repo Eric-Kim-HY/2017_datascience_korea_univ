@@ -58,7 +58,7 @@ class agent :
         # update weight matrix
         layer_2_error = layer_2 - input_sample_onehot
         W_2 = W_2 - learning_rate * (layer_1.T.dot(layer_2_error))
-        W_1 = W_1 - learning_rate * 
+        W_1 = W_1 - learning_rate *
 
         return W_1
 
