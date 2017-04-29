@@ -1,5 +1,6 @@
 from data_proc import dataprocessing
 import numpy as np
+import pandas as pd
 
 
 class agent:
@@ -17,7 +18,6 @@ class agent:
 
         def sigmoid(x):
             return 1 / (1 + np.exp(-x))
-
         self.sigmoid = sigmoid
 
     def text_surfing(self):
@@ -44,23 +44,28 @@ class agent:
     def train(self, input_word, positive_sample, negative_sample, learning_rate):
         # define temporal input word vector and Weight 2
         W_2_idx = set(positive_sample + negative_sample)
-
-        W_2 = self.W[W_2_idx]  # TODO np.array로 전환
-        input_word_vector = self.W[input_word]  # TODO np.array로 전환
+        pos_idx = set(positive_sample)
+        W_2 = self.W.ix[W_2_idx]
+        input_word_vector = self.W.ix[input_word].values
 
         hidden_layer = input_word_vector
 
-        output_layer = self.sigmoid(np.dot(W_2.T, hidden_layer))  # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
+        # 원래 Transpose 하는 것이 맞으나 기존에 들고온 matrix가 이미 transpose 된 상태
+        output_layer = self.sigmoid(np.dot(W_2, hidden_layer))  # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
 
         # output layer 행 개수 정의
         output_size = len(W_2_idx)
 
         # define t
-        t = None  # TODO t define 하기
+        t = pd.DataFrame(data = np.zeros(output_size), index = W_2_idx)
+        t.ix[pos_idx] = 1
+        t = t.values[:,0]
 
-        E = np.dot((output_layer - t))
+        # calculate first cost
+        loss1 = output_layer - t
+        E = np.dot(loss1.reshape([output_size,1]), hidden_layer.reshape([1,self.vec_dim]))
 
-        W_2_updated = W_2 - (learning_rate * E * hidden_layer)
+        W_2_updated = W_2 - (learning_rate * E )
 
         # reduced sum 구현 되도록 축 정하기
         EH = np.sum(np.dot(E, W_2.T))
