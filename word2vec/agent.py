@@ -38,7 +38,7 @@ class agent:
 
 
 
-
+    # train 작업 완료, jupyer notebook 통해서 실제 계산 가능 여부도 확인
     # input_word, positive_sample, negative_sample : list of word index
     # learning_rate : scalar
     def train(self, input_word, positive_sample, negative_sample, learning_rate):
@@ -62,19 +62,19 @@ class agent:
         t = t.values[:,0]
 
         # calculate first cost
-        loss1 = output_layer - t
-        E = np.dot(loss1.reshape([output_size,1]), hidden_layer.reshape([1,self.vec_dim]))
+        loss1 = self.sigmoid(output_layer - t)
+        loss1 = loss1.reshape([output_size,1]) # dot 계산을 위해서 reshape
+        hidden_layer = hidden_layer.reshape([1,self.vec_dim])
+        E = np.dot(loss1, hidden_layer)
 
         W_2_updated = W_2 - (learning_rate * E )
 
         # reduced sum 구현 되도록 축 정하기
-        EH = np.sum(np.dot(E, W_2.T))
+        EH = np.sum(np.dot(loss1.T, hidden_layer), axis = 0)
 
         # input word vector update
         input_word_vector = input_word_vector - learning_rate * EH.T
 
-        self.W[input_word] = input_word_vector
-        self.W[W_2_idx] = W_2_updated
-
-        return
+        self.W.ix[input_word] = input_word_vector
+        self.W.ix[W_2_idx] = W_2_updated
 
