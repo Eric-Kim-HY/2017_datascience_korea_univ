@@ -4,39 +4,33 @@ import pandas as pd
 
 
 class agent:
-    def __init__(self, n_sample, learning_rate, n_window, vec_dim):
+    def __init__(self, learning_rate, n_window, vec_dim):
         # define hyperparameter
-        self.n_sample = n_sample
         self.n_window = n_window
+        self.whole_window = self.n_window * 2 + 1
         self.learning_rate = learning_rate  # learning rate
         self.vec_dim = vec_dim  # 사용할 단어 벡터의 차원
-        self.n_words = None
+        self.n_words = None # unique 단어 개수
         self.train = 10  # 반복학습횟수
         self.W = None  # 부모 weight 함수
+        self.texts = None
 
-        self.dataproc = dataprocessing()
+        self.dataproc = dataprocessing(self.vec_dim)
 
         def sigmoid(x):
             return 1 / (1 + np.exp(-x))
         self.sigmoid = sigmoid
 
-    def text_surfing(self):
-        whole_window = self.n_window * 2 + 1
+    def initialize(self):
 
         # 말뭉치에서 array type으로 단어 뭉치 가져오기
-        texts = self.dataproc.read_corpus()
+        self.texts = self.dataproc.read_corpus()
 
-        # 웨이트 1, 2 들고오기
+        # 웨이트 들고오기
         self.W = self.dataproc.build_word_matrix(texts, self.vec_dim)
 
         # Corpus 에서 전체 unique 단어 개수 class variable에 저장
         self.n_words = self.W.shape[0]
-
-        # 랜덤 샘플링할 index 가져오기
-        negative_sample_idx = self.dataproc.negative_sampling(n_samples=self.n_sample)
-
-
-
 
 
     # train 작업 완료, jupyer notebook 통해서 실제 계산 가능 여부도 확인
@@ -78,4 +72,9 @@ class agent:
 
         self.W.ix[input_word] = input_word_vector
         self.W.ix[W_2_idx] = W_2_updated
+
+
+
+
+
 
