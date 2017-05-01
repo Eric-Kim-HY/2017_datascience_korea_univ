@@ -73,8 +73,14 @@ class agent:
         self.W.ix[input_word] = input_word_vector
         self.W.ix[W_2_idx] = W_2_updated
 
+    #TODO
+    def save_model(self):
+        self.W.to_csv()
+        pass
 
-
+    def load_model(self):
+        self.W = pd.read_csv()
+        pass
 
 
 

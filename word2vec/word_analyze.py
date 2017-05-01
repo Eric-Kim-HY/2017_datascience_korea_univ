@@ -1,6 +1,3 @@
-# load whole model from csv
-
-
 
 # 비슷한 단어 추출 하는 기능 구현
 
@@ -14,10 +11,7 @@
 class word_analyze():
     def __init__(self):
         pass
-    
-    def load_model(self):
 
-        pass
 
     def sim_word(self):
         pass
