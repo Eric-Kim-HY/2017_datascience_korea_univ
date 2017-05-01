@@ -1,5 +1,6 @@
 import numpy as np
 import math
+from agent.py import W
 
 def getVector(word):
     return W.[word]
