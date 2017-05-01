@@ -29,6 +29,7 @@ class agent:
         # 웨이트 1, 2 들고오기
         self.W = self.dataproc.build_word_matrix(texts, self.vec_dim)
 
+        # Corpus 에서 전체 unique 단어 개수 class variable에 저장
         self.n_words = self.W.shape[0]
 
         # 랜덤 샘플링할 index 가져오기
