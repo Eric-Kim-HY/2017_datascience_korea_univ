@@ -1,6 +1,9 @@
 import numpy as np
 import math
 
+def getVector(word):
+    return W.[word]
+
 def cosineSimilarity(v1, v2):       # returns the cosine similarity value of two input vectors v1 and v2
     v1 = np.array(v1)
     v2 = np.array(v2)
