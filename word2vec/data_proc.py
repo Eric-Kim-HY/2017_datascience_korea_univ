@@ -14,7 +14,7 @@ class dataprocessing :
     def read_corpus(self):
         # get corpus
         corpus_file = open(self.corpus_add)
-        text = corpus_file.readlines()
+        text = corpus_file.readline()
         # tokenize the corpus
         tokens = nltk.word_tokenize(text)
         return tokens

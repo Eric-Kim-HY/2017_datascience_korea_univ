@@ -18,19 +18,19 @@ if __name__ == "__main__" :
 
 
     for i in range(train):   # Corpus 반복 횟수
-        for j in range(agent.n_total_words - n_window*2) :    # Corpus 1회 반복, 앞뒤 5개 단어씩 제외
+        for j in range(Agent.n_total_words - n_window*2) :    # Corpus 1회 반복, 앞뒤 5개 단어씩 제외
 
             # n_window 이후부터 시작
             idx = j + n_window
 
             # input word 정의
-            input_word = agent.texts[idx]
+            input_word = Agent.texts[idx]
 
             # positive sampling
-            positive_sample = agent.texts[idx - n_window : idx -1] + agent.texts[idx + 1 : idx + n_window ]
+            positive_sample = Agent.texts[idx - n_window : idx -1] + Agent.texts[idx + 1 : idx + n_window ]
 
             # negative samping
-            negative_sample_idx = dataproc.negative_sampling(n_samples=agent.n_words)
+            negative_sample_idx = dataproc.negative_sampling(n_samples=Agent.n_words)
 
             Agent.train(input_word = input_word, positive_sample = positive_sample,
                         negative_sample = negative_sample_idx, learning_rate = learning_rate)

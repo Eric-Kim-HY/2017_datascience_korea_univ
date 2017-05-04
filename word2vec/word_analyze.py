@@ -30,7 +30,9 @@ class word_analysis():
     def nearestWord(self, v, k):
         # 기준 단어의 벡터(v)와 가장 가까운 상위 k개의 단어를 리턴한다.
         W = self.W
-        W.applymap
+        W['sim'] = W.applymap
+
+        W.sort(columns='sim', axis=0, ascending=True, inplace=True, kind='quicksort', na_position='last')
         # TODO
         pass
 
