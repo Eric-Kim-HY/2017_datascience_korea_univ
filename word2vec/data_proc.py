@@ -52,6 +52,7 @@ class dataprocessing :
     # sampling할 단어 수 n개 입력해 n개의 idx words 를 받아온다
     def negative_sampling(self, n_samples):
 
+
         # word_prob 확률을 이용해서 (0~ unique_word_n -1 ) 사이에서 n_samples 개의 정수 추출
         return_idx = np.random.choice(np.arange(self.unique_words_n), size=n_samples, replace=False, p=self.word_prob)
 
