@@ -18,7 +18,7 @@ if __name__ == "__main__" :
 
 
     for i in range(train):   # Corpus 반복 횟수
-        for j in range(agent.n_words - n_window*2) :    # Corpus 1회 반복, 앞뒤 5개 단어씩 제외
+        for j in range(agent.n_total_words - n_window*2) :    # Corpus 1회 반복, 앞뒤 5개 단어씩 제외
 
             # n_window 이후부터 시작
             idx = j + n_window
@@ -36,3 +36,4 @@ if __name__ == "__main__" :
                         negative_sample = negative_sample_idx, learning_rate = learning_rate)
 
     # Save model Agent.W to csv
+    Agent.W.to_csv('./wordvector.csv')

@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import pandas as pd
-from agent import agent
 
 
 
@@ -9,9 +8,8 @@ from agent import agent
 class word_analysis():
     def __init__(self):
         self.k = 10          # 상위 몇 개의 단어를 받을지 정수 입력
-        self.W = pd.read_csv('./wordvector.csv')
+        self.W = pd.read_csv('./wordvector.csv', header= 0, index_col = 0)
 
-        pass
 
     def getVector(self, word):
         # word에 해당하는 벡터를 행렬 'W' 에서 가져와 array로 리턴한다.
@@ -31,8 +29,14 @@ class word_analysis():
 
     def nearestWord(self, v, k):
         # 기준 단어의 벡터(v)와 가장 가까운 상위 k개의 단어를 리턴한다.
+        W = self.W
+        W.applymap
         # TODO
         pass
+
+
+
+
     # <1> 유사한 관계의 단어 추출
     # word analogy  vector('woman') + [ vector('king') - vector('man') ] +   => vector('queen')
     def analogy(self):

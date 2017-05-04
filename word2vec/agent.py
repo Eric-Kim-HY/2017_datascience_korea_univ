@@ -14,6 +14,7 @@ class agent:
         self.train = 10  # 반복학습횟수
         self.W = None  # 부모 weight 함수
         self.texts = None
+        self.n_total_words = None #중복 포함한 전체 단어 갯수
 
         self.dataproc = dataprocessing(self.vec_dim)
 
@@ -26,11 +27,14 @@ class agent:
         # 말뭉치에서 array type으로 단어 뭉치 가져오기
         self.texts = self.dataproc.read_corpus()
 
+        self.n_total_words = len(self.texts)
+
         # 웨이트 들고오기
-        self.W = self.dataproc.build_word_matrix(texts, self.vec_dim)
+        self.W = self.dataproc.build_word_matrix(self.texts, self.vec_dim)
 
         # Corpus 에서 전체 unique 단어 개수 class variable에 저장
         self.n_words = self.W.shape[0]
+
 
 
     # train 작업 완료, jupyer notebook 통해서 실제 계산 가능 여부도 확인
