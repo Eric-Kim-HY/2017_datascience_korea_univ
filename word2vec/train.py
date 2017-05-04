@@ -33,7 +33,7 @@ if __name__ == "__main__" :
                         negative_sample=negative_sample_idx, learning_rate=learning_rate)
 
             if j % 1000 == 0 :
-                print("iter : %d progress :%f "%(i+1, np.round(100*j/(Agent.n_total_words- n_window*2),2)))
+                print("iter : %d progress :%.4f "%(i+1, np.round(100*j/(Agent.n_total_words- n_window*2),2)))
 
     # Save model Agent.W to csv
     Agent.save_model()

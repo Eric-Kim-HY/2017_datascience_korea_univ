@@ -31,12 +31,14 @@ class agent:
 
         # 말뭉치에서 array type으로 단어 뭉치 가져오기
         self.texts = self.dataproc.read_corpus()
+        print("Loaded the whole corpus")
 
         self.n_total_words = len(self.texts)
 
         # 웨이트 들고오기
         self.W, self.unique_words_n, self.word_idx, self.word_prob =\
                 self.dataproc.build_word_matrix(self.texts, self.vec_dim)
+        print("Built parent matrix")
 
         # Corpus 에서 전체 unique 단어 개수 class variable에 저장
         self.n_words = self.W.shape[0]
