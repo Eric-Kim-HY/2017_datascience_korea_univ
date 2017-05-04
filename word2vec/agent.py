@@ -14,9 +14,13 @@ class agent:
         self.train = 10  # 반복학습횟수
         self.W = None  # 부모 weight 함수
         self.texts = None
-        self.n_total_words = None #중복 포함한 전체 단어 갯수
+        self.n_total_words = None  #중복 포함한 전체 단어 갯수
+        self.dataproc = dataprocessing()
+        self.unique_words_n = None # 총 단어 종류 수
+        self.word_idx = None # 단어 확률분포에 대응되는 idx word
+        self.word_prob = None  # 단어 확률 분포 변수( list 할당 예정 )
 
-        self.dataproc = dataprocessing(self.vec_dim)
+
 
         def sigmoid(x):
             return 1 / (1 + np.exp(-x))
@@ -30,12 +34,22 @@ class agent:
         self.n_total_words = len(self.texts)
 
         # 웨이트 들고오기
-        self.W = self.dataproc.build_word_matrix(self.texts, self.vec_dim)
+        self.W, self.unique_words_n, self.word_idx, self.word_prob =\
+                self.dataproc.build_word_matrix(self.texts, self.vec_dim)
 
         # Corpus 에서 전체 unique 단어 개수 class variable에 저장
         self.n_words = self.W.shape[0]
 
 
+
+    # sampling할 단어 수 n개 입력해 n개의 idx words 를 받아온다
+    def negative_sampling(self, n_samples):
+
+        # word_prob 확률을 이용해서 (0~ unique_word_n -1 ) 사이에서 n_samples 개의 정수 추출
+        return_idx = np.random.choice(np.arange(self.unique_words_n), size=n_samples, replace=False, p=self.word_prob)
+
+        # 각 idx 에 해당하는 단어를 찾아 list 형태로 반환
+        return self.word_idx[return_idx].tolist()
 
     # train 작업 완료, jupyer notebook 통해서 실제 계산 가능 여부도 확인
     # input_word, positive_sample, negative_sample : list of word index

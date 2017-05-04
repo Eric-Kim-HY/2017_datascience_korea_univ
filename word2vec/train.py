@@ -1,4 +1,3 @@
-from data_proc import dataprocessing
 from agent import agent
 
 # Setting Hyperparameter
@@ -15,7 +14,6 @@ if __name__ == "__main__" :
     Agent = agent(learning_rate=learning_rate, n_window = n_window, vec_dim=vec_dim)
     Agent.initialize()
 
-    dataproc = dataprocessing(vec_dim)
 
 
     for i in range(train):   # Corpus 반복 횟수
@@ -31,7 +29,7 @@ if __name__ == "__main__" :
             positive_sample = Agent.texts[idx - n_window : idx -1] + Agent.texts[idx + 1 : idx + n_window ]
 
             # negative samping
-            negative_sample_idx = dataproc.negative_sampling(n_samples=negative_sample)
+            negative_sample_idx = Agent.negative_sampling(n_samples=negative_sample)
 
             Agent.train(input_word = input_word, positive_sample = positive_sample,
                         negative_sample = negative_sample_idx, learning_rate = learning_rate)
