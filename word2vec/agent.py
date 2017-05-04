@@ -1,6 +1,7 @@
 from data_proc import dataprocessing
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 
 class agent:
@@ -18,11 +19,11 @@ class agent:
         self.unique_words_n = None # 총 단어 종류 수
         self.word_idx = None # 단어 확률분포에 대응되는 idx word
         self.word_prob = None  # 단어 확률 분포 변수( list 할당 예정 )
-
-
+        self.sess = tf.Session() # tensorflow graph 인자 (train_tf에서 사용)
 
         def sigmoid(x):
             return 1 / (1 + np.round(np.exp(-x),10))
+
         self.sigmoid = sigmoid
 
     def initialize(self):
@@ -38,7 +39,7 @@ class agent:
         # 웨이트 들고오기
         self.W, self.unique_words_n, self.word_idx, self.word_prob =\
                 self.dataproc.build_word_matrix(self.texts, self.vec_dim)
-        print("Built parent matrix")
+        print("Built the parent matrix")
 
         # Corpus 에서 전체 unique 단어 개수 class variable에 저장
         self.n_words = self.W.shape[0]
@@ -59,7 +60,7 @@ class agent:
     # train 작업 완료, jupyter notebook 통해서 실제 계산 가능 여부도 확인
     # input_word, positive_sample, negative_sample : list of word index
     # learning_rate : scalar
-    def train(self, input_word, positive_sample, negative_sample, learning_rate):
+    def train(self, input_word, positive_sample, negative_sample):
         # define temporal input word vector and Weight 2
         W_2_idx = set(positive_sample + negative_sample)
         pos_idx = set(positive_sample)
@@ -85,16 +86,74 @@ class agent:
         hidden_layer = hidden_layer.reshape([1,self.vec_dim])
         E = np.dot(loss1, hidden_layer)
 
-        W_2_updated = W_2 - (learning_rate * E )
+        W_2_updated = W_2 - (self.learning_rate * E )
 
         # reduced sum 구현 되도록 축 정하기
         EH = np.sum(np.dot(loss1, hidden_layer), axis = 0)
 
         # input word vector update
-        input_word_vector = input_word_vector - learning_rate * EH.T
+        input_word_vector = input_word_vector - self.learning_rate * EH.T
 
         self.W.ix[input_word] = input_word_vector
         self.W.ix[W_2_idx] = W_2_updated
+
+    # Tensorflow graph 구축
+    def build_network(self):
+        ### hidden layer, W_2, t 담을 place holder 정의
+        # Shape [ vec_dim, 1 ]
+        self.hidden_layer = tf.placeholder(tf.float32, [self.vec_dim, None]) # Size (vector dimension)
+
+        # Shape [n_sample,vec_dim]
+        self.W_2 = tf.placeholder(tf.float32,[None, self.vec_dim])
+
+        # Shape [n_sample, 1]
+        self.t = tf.placeholder(tf.float32, [None,1])
+
+
+        ### Build Graph
+        # Shape [n_sample, 1]
+        self.output_layer = 1/(tf.exp(-(tf.matmul(self.W_2, self.hidden_layer))) + 1)  # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
+
+        # Shape [n_sample, 1] calculate first cost
+        self.loss1 = 1/(tf.exp(-(self.output_layer - self.t)) + 1)
+
+        # Shape [n_sample, vec_dim]
+        self.E = tf.matmul(self.loss1, self.hidden_layer, transpose_b=True)
+
+        # Shape [n_sample, vec_dim]
+        self.W_2_updated = self.W_2 - (self.learning_rate * self.E )
+
+        # Shape [100], reduced sum 구현 되도록 축 정하기
+        self.EH = tf.reduce_sum(self.E, axis = 0)
+
+        # Shape [100], input word vector update
+        self.input_word_updated = tf.transpose(self.hidden_layer) - self.learning_rate * self.EH
+
+    # train with tensorflow graph
+    def train_tf(self, input_word, positive_sample, negative_sample):
+        # define temporal input word vector and Weight 2
+        W_2_idx = set(positive_sample + negative_sample)
+        pos_idx = set(positive_sample)
+        W_2 = self.W.ix[W_2_idx]
+        input_word_vector = self.W.ix[input_word].values.reshape([self.vec_dim,1])
+
+        hidden_layer = input_word_vector
+
+        # output layer 행 개수 정의
+        output_size = len(W_2_idx)
+
+        # define t
+        t = pd.DataFrame(data = np.zeros(output_size), index = W_2_idx)
+        t.ix[pos_idx] = 1
+        t = t.values[:,0].reshape([t.shape[0],1])
+
+        # update 된 vector를 tensorflow graph 실행 시키며 바로 할당
+        self.W.ix[input_word], self.W.ix[W_2_idx] = \
+        self.sess.run([self.input_word_updated,self.W_2_updated],
+                      feed_dict= {self.hidden_layer : hidden_layer,
+                                  self.W_2 : W_2,
+                                  self.t : t})
+
 
     def save_model(self):
         self.W.to_csv('./wordvector.csv')

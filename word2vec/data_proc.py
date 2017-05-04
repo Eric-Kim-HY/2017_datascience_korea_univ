@@ -5,6 +5,7 @@ import pandas as pd
 class dataprocessing :
     def __init__(self):
         self.corpus_add = 'C:/Users/smilekhy/Desktop/word2vec_project/text8'
+        #self.corpus_add = './sample.txt'
 
     def read_corpus(self):
         # get corpus
