@@ -11,7 +11,6 @@ class agent:
         self.learning_rate = learning_rate  # learning rate
         self.vec_dim = vec_dim  # 사용할 단어 벡터의 차원
         self.n_words = None # unique 단어 개수
-        self.train = 10  # 반복학습횟수
         self.W = None  # 부모 weight 함수
         self.texts = None
         self.n_total_words = None  #중복 포함한 전체 단어 갯수
@@ -23,10 +22,12 @@ class agent:
 
 
         def sigmoid(x):
-            return 1 / (1 + np.exp(-x))
+            return 1 / (1 + np.round(np.exp(-x),10))
         self.sigmoid = sigmoid
 
     def initialize(self):
+
+        print("Starts initialize")
 
         # 말뭉치에서 array type으로 단어 뭉치 가져오기
         self.texts = self.dataproc.read_corpus()
@@ -41,6 +42,8 @@ class agent:
         self.n_words = self.W.shape[0]
 
 
+        print("Initialized!")
+
 
     # sampling할 단어 수 n개 입력해 n개의 idx words 를 받아온다
     def negative_sampling(self, n_samples):
@@ -51,7 +54,7 @@ class agent:
         # 각 idx 에 해당하는 단어를 찾아 list 형태로 반환
         return self.word_idx[return_idx].tolist()
 
-    # train 작업 완료, jupyer notebook 통해서 실제 계산 가능 여부도 확인
+    # train 작업 완료, jupyter notebook 통해서 실제 계산 가능 여부도 확인
     # input_word, positive_sample, negative_sample : list of word index
     # learning_rate : scalar
     def train(self, input_word, positive_sample, negative_sample, learning_rate):
@@ -83,7 +86,7 @@ class agent:
         W_2_updated = W_2 - (learning_rate * E )
 
         # reduced sum 구현 되도록 축 정하기
-        EH = np.sum(np.dot(loss1.T, hidden_layer), axis = 0)
+        EH = np.sum(np.dot(loss1, hidden_layer), axis = 0)
 
         # input word vector update
         input_word_vector = input_word_vector - learning_rate * EH.T
@@ -91,14 +94,13 @@ class agent:
         self.W.ix[input_word] = input_word_vector
         self.W.ix[W_2_idx] = W_2_updated
 
-    #TODO
     def save_model(self):
-        self.W.to_csv()
-        pass
+        self.W.to_csv('./wordvector.csv')
+
 
     def load_model(self):
-        self.W = pd.read_csv()
-        pass
+        return pd.read_csv('./wordvector.csv', header= 0, index_col = 0)
+
 
 
 

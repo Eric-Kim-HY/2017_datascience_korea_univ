@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import pandas as pd
+from agent import agent
 
 
 
@@ -8,7 +9,7 @@ import pandas as pd
 class word_analysis():
     def __init__(self):
         self.k = 10          # 상위 몇 개의 단어를 받을지 정수 입력
-        self.W = pd.read_csv('./wordvector.csv', header= 0, index_col = 0)
+        self.W = agent.load_model()
 
 
     def getVector(self, word):

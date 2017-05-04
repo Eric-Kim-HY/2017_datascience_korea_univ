@@ -1,12 +1,13 @@
 from agent import agent
+import numpy as np
 
 # Setting Hyperparameter
-vec_dim = 200
+vec_dim = 100
 n_window = 5
 whole_window = n_window * 2 + 1
-learning_rate = 1e-1
-train = 3  # 반복학습횟수
-negative_sample = 100 # negative sample 개수
+learning_rate = 0.01
+iteration = 1  # 반복학습횟수
+negative_sample = 20 # negative sample 개수
 
 
 if __name__ == "__main__" :
@@ -16,7 +17,7 @@ if __name__ == "__main__" :
 
 
 
-    for i in range(train):   # Corpus 반복 횟수
+    for i in range(iteration):   # Corpus 반복 횟수
         for j in range(Agent.n_total_words - n_window*2) :    # Corpus 1회 반복, 앞뒤 5개 단어씩 제외
 
             # n_window 이후부터 시작
@@ -24,15 +25,15 @@ if __name__ == "__main__" :
 
             # input word 정의
             input_word = Agent.texts[idx]
-
             # positive sampling
             positive_sample = Agent.texts[idx - n_window : idx -1] + Agent.texts[idx + 1 : idx + n_window ]
-
             # negative samping
             negative_sample_idx = Agent.negative_sampling(n_samples=negative_sample)
+            Agent.train(input_word=input_word, positive_sample=positive_sample,
+                        negative_sample=negative_sample_idx, learning_rate=learning_rate)
 
-            Agent.train(input_word = input_word, positive_sample = positive_sample,
-                        negative_sample = negative_sample_idx, learning_rate = learning_rate)
+            if j % 1000 == 0 :
+                print("iter : %d progress :%f "%(i+1, np.round(100*j/(Agent.n_total_words- n_window*2),2)))
 
     # Save model Agent.W to csv
-    Agent.W.to_csv('./wordvector.csv')
+    Agent.save_model()
