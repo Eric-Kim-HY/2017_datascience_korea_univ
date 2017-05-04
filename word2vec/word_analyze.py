@@ -1,50 +1,55 @@
 import numpy as np
 import math
-from agent import W
+import pandas as pd
+from agent import agent
 
-def getVector(word):
-    # word에 해당하는 벡터를 행렬 'W' 에서 가져와 array로 리턴한다.
-    if word in W.ix:
-        return W.ix[word]
-    else:
-        print("해당 단어는 우리의 딕셔너리에 없습니다. 다른 단어를 입력해주세요.")
 
-def cosineSimilarity(v1, v2):       # returns the cosine similarity value of two input vectors v1 and v2
-    v1 = np.array(v1)
-    v2 = np.array(v2)
-    multi = (v1.dot(v2)).sum()
-    x = math.sqrt((v1 * v1).sum())
-    y = math.sqrt((v2 * v2).sum())
-    result = multi / (x * y)
-    return result
 
-def nearestWord(v,k):
-    # 기준 단어의 벡터(v)와 가장 가까운 상위 k개의 단어를 리턴한다.
-    #TODO
-    pass
 
 class word_analysis():
     def __init__(self):
-        k = 10          # 상위 몇 개의 단어를 받을지 정수 입력
+        self.k = 10          # 상위 몇 개의 단어를 받을지 정수 입력
+        self.W = pd.read_csv('./wordvector.csv')
+
         pass
 
+    def getVector(self, word):
+        # word에 해당하는 벡터를 행렬 'W' 에서 가져와 array로 리턴한다.
+        if word in self.W.ix:
+            return self.W.ix[word]
+        else:
+            print("해당 단어는 우리의 딕셔너리에 없습니다. 다른 단어를 입력해주세요.")
+
+    def cosineSimilarity(self, v1, v2):  # returns the cosine similarity value of two input vectors v1 and v2
+        v1 = np.array(v1)
+        v2 = np.array(v2)
+        multi = (v1.dot(v2)).sum()
+        x = math.sqrt((v1 * v1).sum())
+        y = math.sqrt((v2 * v2).sum())
+        result = multi / (x * y)
+        return result
+
+    def nearestWord(self, v, k):
+        # 기준 단어의 벡터(v)와 가장 가까운 상위 k개의 단어를 리턴한다.
+        # TODO
+        pass
     # <1> 유사한 관계의 단어 추출
     # word analogy  vector('woman') + [ vector('king') - vector('man') ] +   => vector('queen')
     def analogy(self):
         print("A : B의 관계는 C : D의 관계와 같다")
-        vec_A = getVector(input("A의 자리에 넣을 단어를 입력하세요"))
-        vec_B = getVector(input("B의 자리에 넣을 단어를 입력하세요"))
-        vec_C = getVector(input("C의 자리에 넣을 단어를 입력하세요"))
+        vec_A = self.getVector(input("A의 자리에 넣을 단어를 입력하세요"))
+        vec_B = self.getVector(input("B의 자리에 넣을 단어를 입력하세요"))
+        vec_C = self.getVector(input("C의 자리에 넣을 단어를 입력하세요"))
         vec_D = vec_C + vec_B - vec_A
-        words_nearD = nearestWord(vec_D, self.k)
+        words_nearD = self.nearestWord(vec_D, self.k)
         result = words_nearD
         print("D의 자리에 가장 가까운 {0}개의 단어들: {1}", self.k, result)
 
 
     # <2> 가장 유사한 N개의 단어 추출
     def similar(self):
-        vec = getVector(input("A의 자리에 넣을 단어를 입력하세요"))
-        result = nearestWord(vec, self.k)
+        vec = self.getVector(input("A의 자리에 넣을 단어를 입력하세요"))
+        result = self.nearestWord(vec, self.k)
         print("가장 가까운 {0}개의 단어들: {1}", self.k, result)
 
 
@@ -52,9 +57,9 @@ class word_analysis():
     def nearest(self):
         w1 = input("첫 번째 단어를 입력하세요: ")
         w2 = input("두 번째 단어를 입력하세요: ")
-        v1 = getVector(w1)
-        v2 = getVector(w2)
-        result = cosineSimilarity(v1, v2)
+        v1 = self.getVector(w1)
+        v2 = self.getVector(w2)
+        result = self.cosineSimilarity(v1, v2)
         print("{0}과 {1} 의 cosine similarity 값은 {2}입니다.", w1, w2, result)
 
 
