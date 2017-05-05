@@ -1,11 +1,11 @@
 from data_proc import dataprocessing
 import numpy as np
 import pandas as pd
-import tensorflow as tf
+from numba import jit
 
 
 class agent:
-    def __init__(self, learning_rate, n_window, vec_dim):
+    def __init__(self, learning_rate, n_window, vec_dim, n_cores):
         # define hyperparameter
         self.n_window = n_window
         self.whole_window = self.n_window * 2 + 1
@@ -19,12 +19,14 @@ class agent:
         self.unique_words_n = None # 총 단어 종류 수
         self.word_idx = None # 단어 확률분포에 대응되는 idx word
         self.word_prob = None  # 단어 확률 분포 변수( list 할당 예정 )
-        self.sess = tf.Session() # tensorflow graph 인자 (train_tf에서 사용)
+        #config = tf.ConfigProto(intra_op_parallelism_threads = n_cores )
+        #self.sess = tf.Session(config = config) # tensorflow graph 인자 (train_tf에서 사용)
 
-        def sigmoid(x):
-            return 1 / (1 + np.round(np.exp(-x),10))
+        pass
 
-        self.sigmoid = sigmoid
+    def sigmoid(self, x):
+        return 1 / (1 + np.round(np.exp(-x),10))
+
 
     def initialize(self):
 
@@ -60,6 +62,8 @@ class agent:
     # train 작업 완료, jupyter notebook 통해서 실제 계산 가능 여부도 확인
     # input_word, positive_sample, negative_sample : list of word index
     # learning_rate : scalar
+
+    @jit
     def train(self, input_word, positive_sample, negative_sample):
         # define temporal input word vector and Weight 2
         W_2_idx = set(positive_sample + negative_sample)
@@ -96,7 +100,7 @@ class agent:
 
         self.W.ix[input_word] = input_word_vector
         self.W.ix[W_2_idx] = W_2_updated
-
+    """
     # Tensorflow graph 구축
     def build_network(self):
         ### hidden layer, W_2, t 담을 place holder 정의
@@ -153,7 +157,7 @@ class agent:
                       feed_dict= {self.hidden_layer : hidden_layer,
                                   self.W_2 : W_2,
                                   self.t : t})
-
+    """
 
     def save_model(self):
         self.W.to_csv('./wordvector.csv')
