@@ -5,6 +5,7 @@ from numba import jit
 
 
 class agent:
+    @jit
     def __init__(self, learning_rate, n_window, vec_dim, n_cores):
         # define hyperparameter
         self.n_window = n_window
@@ -24,10 +25,11 @@ class agent:
 
         pass
 
+    @jit
     def sigmoid(self, x):
         return 1 / (1 + np.round(np.exp(-x),10))
 
-
+    @jit
     def initialize(self):
 
         print("Starts initialize")
@@ -51,6 +53,7 @@ class agent:
 
 
     # sampling할 단어 수 n개 입력해 n개의 idx words 를 받아온다
+    @jit
     def negative_sampling(self, n_samples):
 
         # word_prob 확률을 이용해서 (0~ unique_word_n -1 ) 사이에서 n_samples 개의 정수 추출
@@ -100,69 +103,12 @@ class agent:
 
         self.W.ix[input_word] = input_word_vector
         self.W.ix[W_2_idx] = W_2_updated
-    """
-    # Tensorflow graph 구축
-    def build_network(self):
-        ### hidden layer, W_2, t 담을 place holder 정의
-        # Shape [ vec_dim, 1 ]
-        self.hidden_layer = tf.placeholder(tf.float32, [self.vec_dim, None]) # Size (vector dimension)
 
-        # Shape [n_sample,vec_dim]
-        self.W_2 = tf.placeholder(tf.float32,[None, self.vec_dim])
-
-        # Shape [n_sample, 1]
-        self.t = tf.placeholder(tf.float32, [None,1])
-
-
-        ### Build Graph
-        # Shape [n_sample, 1]
-        self.output_layer = 1/(tf.exp(-(tf.matmul(self.W_2, self.hidden_layer))) + 1)  # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
-
-        # Shape [n_sample, 1] calculate first cost
-        self.loss1 = 1/(tf.exp(-(self.output_layer - self.t)) + 1)
-
-        # Shape [n_sample, vec_dim]
-        self.E = tf.matmul(self.loss1, self.hidden_layer, transpose_b=True)
-
-        # Shape [n_sample, vec_dim]
-        self.W_2_updated = self.W_2 - (self.learning_rate * self.E )
-
-        # Shape [100], reduced sum 구현 되도록 축 정하기
-        self.EH = tf.reduce_sum(self.E, axis = 0)
-
-        # Shape [100], input word vector update
-        self.input_word_updated = tf.transpose(self.hidden_layer) - self.learning_rate * self.EH
-
-    # train with tensorflow graph
-    def train_tf(self, input_word, positive_sample, negative_sample):
-        # define temporal input word vector and Weight 2
-        W_2_idx = set(positive_sample + negative_sample)
-        pos_idx = set(positive_sample)
-        W_2 = self.W.ix[W_2_idx]
-        input_word_vector = self.W.ix[input_word].values.reshape([self.vec_dim,1])
-
-        hidden_layer = input_word_vector
-
-        # output layer 행 개수 정의
-        output_size = len(W_2_idx)
-
-        # define t
-        t = pd.DataFrame(data = np.zeros(output_size), index = W_2_idx)
-        t.ix[pos_idx] = 1
-        t = t.values[:,0].reshape([t.shape[0],1])
-
-        # update 된 vector를 tensorflow graph 실행 시키며 바로 할당
-        self.W.ix[input_word], self.W.ix[W_2_idx] = \
-        self.sess.run([self.input_word_updated,self.W_2_updated],
-                      feed_dict= {self.hidden_layer : hidden_layer,
-                                  self.W_2 : W_2,
-                                  self.t : t})
-    """
-
+    @jit
     def save_model(self):
         self.W.to_csv('./wordvector.csv')
 
-
+    @jit
     def load_model(self):
         return pd.read_csv('./wordvector.csv', header= 0, index_col = 0)
 

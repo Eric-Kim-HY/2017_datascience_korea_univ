@@ -1,12 +1,15 @@
 import nltk
 import numpy as np
 import pandas as pd
+from numba import jit
 
 class dataprocessing :
+    @jit
     def __init__(self):
         self.corpus_add = './text8'
         #self.corpus_add = './sample.txt'
 
+    @jit
     def read_corpus(self):
         # get corpus
         corpus_file = open(self.corpus_add)
@@ -14,6 +17,7 @@ class dataprocessing :
         # tokenize the corpus
         tokens = nltk.word_tokenize(text)
         return tokens
+
 
     def build_word_matrix(self, tokens, vector_dim):
         # get the number of unique words in the corpus
@@ -24,6 +28,7 @@ class dataprocessing :
                                    index = set(tokens), columns=range(vector_dim), dtype=np.float32)
 
         # truncate outliers
+
         def truncate(x):
             bound = 0.9
             if x > bound : return bound

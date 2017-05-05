@@ -28,7 +28,7 @@ if load_model :
 # Multiprocessing 을 위해 main function을 따로 정의
 @jit
 def main_function(j) :
-    print(j)
+
     # n_window 이후부터 시작
     idx = j + n_window
 
@@ -48,7 +48,7 @@ def main_function(j) :
     if (j + 1) % 1000 == 0:
         print("progress : ", np.round(100 * j / (Agent.n_total_words - n_window * 2), 2))
 
-    if (j + 1) % 10000 == 0:
+    if np.random.rand() < 0.00001 :
         Agent.save_model()
         print("Model saved")
 
