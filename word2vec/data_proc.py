@@ -16,8 +16,7 @@ class dataprocessing :
         return tokens
 
     def build_word_matrix(self, tokens, vector_dim):
-
-
+        # get the number of unique words in the corpus
         unique_words_n = len(set(tokens))
         # build standard word matrix
         # initialize the elements values
@@ -28,18 +27,19 @@ class dataprocessing :
         def truncate(x):
             bound = 0.9
             if x > bound : return bound
-            elif x < -1*bound : return -1*bound
-            else :return x
+            elif x < -1 * bound : return -1 * bound
+            else : return x
         word_matrix = word_matrix.applymap(truncate)
 
-        # Negative samping을 위한 단어별 확률분포 생성
-        total_num_words = len(tokens)
-        freqdist = nltk.FreqDist(tokens)
+        # Negative sampling을 위한 단어별 확률분포 생성
+        # 해당어 확률 = [해당어 빈도수^(3/4)] / [빈도수^(3/4)의 총합]
+        total_num_words = len(tokens)       # 중복 허용한 모든 token 갯수
+        freqdist = nltk.FreqDist(tokens)    # corpus 내 token의 빈도수
         word_temp1 = pd.DataFrame([freqdist])
 
         word_temp1 = word_temp1/ total_num_words
         word_temp1 = pow(word_temp1, 0.75)
-        denom = word_temp1.sum(axis = 1)[0]
+        denom = word_temp1.sum(axis = 1)[0] # 모든 word_temp1들의 합을 분모로
         word_prob = word_temp1 / denom   # 클래스 변수에 바로 할당
         word_idx = word_prob.columns
         word_prob = word_prob.values[0].tolist()
