@@ -1,6 +1,6 @@
 from agent import agent
 import numpy as np
-from numba import jit #numba library 를 이용해 미리 컴파일해 학습 속도를 높임
+from numba import jit # numba library 를 이용해 미리 컴파일해 학습 속도를 높임
 from multiprocessing import Pool   # Multiprocessing 을 위한 라이브러리 import
 
 
@@ -15,7 +15,7 @@ n_cores = 4  # multiprocessing 동시 실행 프로세스 수
 load_model = False  # 기존 학습된 parent weight loading 여부
 
 # Agent 클래스 불러오기
-Agent = agent(learning_rate=learning_rate, n_window=n_window, vec_dim=vec_dim, n_cores=n_cores)
+Agent = agent(learning_rate=learning_rate, n_window=n_window, vec_dim=vec_dim)
 
 # Agent 클래스에서 초기 세팅 함수 실행
 Agent.initialize()

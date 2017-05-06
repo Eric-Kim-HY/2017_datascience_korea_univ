@@ -107,11 +107,11 @@ class agent:
         EH = np.sum(np.dot(loss1, hidden_layer), axis = 0)
 
         # Shape [vec_dim], input word vector update
-        input_word_vector = input_word_vector - self.learning_rate * EH.T
+        input_word_vector_updated = input_word_vector - self.learning_rate * EH.T
 
         ## Update Weight ##
-        
-        self.W.ix[input_word] = input_word_vector
+
+        self.W.ix[input_word] = input_word_vector_updated
         self.W.ix[W_2_idx] = W_2_updated
 
     @jit
