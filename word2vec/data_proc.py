@@ -11,11 +11,8 @@ class dataprocessing :
 
         # stopword setting
         self.stpwrds = nltk.corpus.stopwords.words('english')
-        self.stpwrds = self.stpwrds + [',', '.', "''", '``', "\"\"", "'", "\"", '?', '!', '@', '#', '$', '%', '&', "'s", '(', ')',
-                             '-', '--', '|', '||', ':', "n't"]
 
 
-    @jit
     def read_corpus(self):
         # get corpus
         corpus_file = open(self.corpus_add)
