@@ -7,7 +7,13 @@ class dataprocessing :
     @jit
     def __init__(self):
         self.corpus_add = './text8'
-        #self.corpus_add = './sample.txt'
+        #self.corpus_add = './sample.txt' # for using sample
+
+        # stopword setting
+        self.stpwrds = nltk.corpus.stopwords.words('english')
+        self.stpwrds = self.stpwrds + [',', '.', "''", '``', "\"\"", "'", "\"", '?', '!', '@', '#', '$', '%', '&', "'s", '(', ')',
+                             '-', '--', '|', '||', ':', "n't"]
+
 
     @jit
     def read_corpus(self):
@@ -16,6 +22,13 @@ class dataprocessing :
         text = corpus_file.readline()
         # tokenize the corpus
         tokens = nltk.word_tokenize(text)
+
+        # Stopword 제거
+        tokens = [k for k in tokens if k not in self.stpwrds]
+
+        # 숫자제거
+        tokens = [k for k in tokens if not k.isdigit()]
+
         return tokens
 
 

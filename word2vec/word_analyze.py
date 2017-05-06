@@ -1,17 +1,18 @@
 import numpy as np
 import math
-import pandas as pd
+from numba import jit
 from agent import agent
 
 
 
 
 class word_analysis():
+    @jit
     def __init__(self):
         self.k = 10          # 상위 몇 개의 단어를 받을지 정수 입력
         self.W = agent.load_model()
 
-
+    @jit
     def getVector(self, word):
         # word에 해당하는 벡터를 행렬 'W' 에서 가져와 array로 리턴한다.
         if word in self.W.ix:
@@ -19,6 +20,7 @@ class word_analysis():
         else:
             print("해당 단어는 우리의 딕셔너리에 없습니다. 다른 단어를 입력해주세요.")
 
+    @jit
     def cosineSimilarity(self, v1, v2):  # returns the cosine similarity value of two input vectors v1 and v2
         v1 = np.array(v1)
         v2 = np.array(v2)
@@ -28,6 +30,7 @@ class word_analysis():
         result = multi / (x * y)
         return result
 
+    @jit
     def nearestWord(self, v, k):
         # 기준 단어의 벡터(v)와 가장 가까운 상위 k개의 단어를 리턴한다.
         W = self.W
@@ -42,6 +45,7 @@ class word_analysis():
 
     # <1> 유사한 관계의 단어 추출
     # word analogy  vector('woman') + [ vector('king') - vector('man') ] +   => vector('queen')
+    @jit
     def analogy(self):
         print("A : B의 관계는 C : D의 관계와 같다")
         vec_A = self.getVector(input("A의 자리에 넣을 단어를 입력하세요"))
@@ -54,6 +58,7 @@ class word_analysis():
 
 
     # <2> 가장 유사한 N개의 단어 추출
+    @jit
     def similar(self):
         vec = self.getVector(input("A의 자리에 넣을 단어를 입력하세요"))
         result = self.nearestWord(vec, self.k)
@@ -61,6 +66,7 @@ class word_analysis():
 
 
     # <3> 두 단어의 Similarity
+    @jit
     def nearest(self):
         w1 = input("첫 번째 단어를 입력하세요: ")
         w2 = input("두 번째 단어를 입력하세요: ")
