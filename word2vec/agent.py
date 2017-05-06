@@ -88,7 +88,7 @@ class agent:
         t = t.values[:,0]
 
         # calculate first cost
-        loss1 = self.sigmoid(output_layer - t)
+        loss1 = output_layer - t
         loss1 = loss1.reshape([output_size,1]) # dot 계산을 위해서 reshape
         hidden_layer = hidden_layer.reshape([1,self.vec_dim])
         E = np.dot(loss1, hidden_layer)
