@@ -6,7 +6,7 @@ from numba import jit
 
 class agent:
     @jit
-    def __init__(self, learning_rate, n_window, vec_dim, n_cores):
+    def __init__(self, learning_rate, n_window, vec_dim):
         # define hyperparameter
         self.n_window = n_window
         self.whole_window = self.n_window * 2 + 1
@@ -68,39 +68,49 @@ class agent:
 
     @jit
     def train(self, input_word, positive_sample, negative_sample):
-        # define temporal input word vector and Weight 2
+        ## define temporal input word vector and Weight 2 ##
         W_2_idx = set(positive_sample + negative_sample)
         pos_idx = set(positive_sample)
-        W_2 = self.W.ix[W_2_idx]
         input_word_vector = self.W.ix[input_word].values
 
+        ## Set input values ##
+
+        # Shape [ 1, vec_dim ]
         hidden_layer = input_word_vector
+        hidden_layer = hidden_layer.reshape([1,self.vec_dim])
 
-        # 원래 Transpose 하는 것이 맞으나 기존에 들고온 matrix가 이미 transpose 된 상태
-        output_layer = self.sigmoid(np.dot(W_2, hidden_layer))  # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
+        # Shape [n_sample,vec_dim]
+        W_2 = self.W.ix[W_2_idx]
 
-        # output layer 행 개수 정의
+        # Shape [n_sample, 1], define t
         output_size = len(W_2_idx)
-
-        # define t
         t = pd.DataFrame(data = np.zeros(output_size), index = W_2_idx)
         t.ix[pos_idx] = 1
         t = t.values[:,0]
 
-        # calculate first cost
+        ## Build Graphs ##
+
+        # Shape [n_sample, 1], 원래 Transpose 하는 것이 맞으나 기존에 들고온 matrix가 이미 transpose 된 상태
+        output_layer = self.sigmoid(np.dot(W_2, hidden_layer))  # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
+
+        # Shape [n_sample, 1] calculate first cost
         loss1 = output_layer - t
         loss1 = loss1.reshape([output_size,1]) # dot 계산을 위해서 reshape
-        hidden_layer = hidden_layer.reshape([1,self.vec_dim])
+
+        # Shape [n_sample, vec_dim]
         E = np.dot(loss1, hidden_layer)
 
+        # Shape [n_sample, vec_dim]
         W_2_updated = W_2 - (self.learning_rate * E )
 
-        # reduced sum 구현 되도록 축 정하기
+        # Shape [vec_dim], reduced sum 구현 되도록 축 정하기
         EH = np.sum(np.dot(loss1, hidden_layer), axis = 0)
 
-        # input word vector update
+        # Shape [vec_dim], input word vector update
         input_word_vector = input_word_vector - self.learning_rate * EH.T
 
+        ## Update Weight ##
+        
         self.W.ix[input_word] = input_word_vector
         self.W.ix[W_2_idx] = W_2_updated
 
