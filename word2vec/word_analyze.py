@@ -30,11 +30,11 @@ class word_analysis():
         # cosine similarity 칼럼 생성을 위해 weight를 새로운 matrix로 복사
         W = self.W
 
-        # cosine similarity 칼럼 생성,
-        W['sim'] = self.COSIM(W.as_matrix().reshape([W.shape[0],W.shape[1]]),v)
-
         # similarity 연산을 위해 vector reshape
         v = v.reshape([1,W.shape[1]])
+
+        # cosine similarity 칼럼 생성,
+        W['sim'] = self.COSIM(W.as_matrix().reshape([W.shape[0],W.shape[1]]),v)
 
         # Similarity 높은 순으로 정렬
         W.sort_values(by='sim', axis=0, ascending=False, inplace=True, kind='quicksort', na_position='last')
