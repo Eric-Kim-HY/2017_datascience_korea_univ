@@ -3,7 +3,7 @@ import math
 from numba import jit
 import pandas as pd
 import sklearn.metrics
-
+import sys
 
 
 class word_analysis():
@@ -21,7 +21,6 @@ class word_analysis():
             return self.W.ix[word].values
         else:
             print("{0} 단어는 우리의 딕셔너리에 없습니다. 다른 단어를 입력해주세요.".format(word))
-
 
     @jit
     def nearestWord(self, v, k):
@@ -57,16 +56,16 @@ class word_analysis():
         vec_D = vec_B - vec_A + vec_C
         words_nearD = self.nearestWord(vec_D, self.k)
 
-        print("D의 자리에 가장 가까운 {0}개의 단어들: {1}".format( self.k, words_nearD))
+        print("D의 자리에 가장 가까운 {0}개의 단어들: {1}\n".format( self.k, words_nearD))
 
 
     # <2> 가장 유사한 N개의 단어 추출
     @jit
     def similar(self):
-        word = input("A의 자리에 넣을 단어를 입력하세요 : ")
+        word = input("탐색할 단어를 입력하세요 : ")
         vec = self.getVector(word)
         result = self.nearestWord(vec, self.k)
-        print("가장 가까운 {0}개의 단어들: {1}".format( self.k, result))
+        print("가장 가까운 {0}개의 단어들: {1}\n".format( self.k, result))
 
 
     # <3> 두 단어의 Similarity
@@ -77,13 +76,20 @@ class word_analysis():
         v1 = self.getVector(w1)
         v2 = self.getVector(w2)
         result = self.COSIM(v1, v2)
-        print("{0}과 {1} 의 cosine similarity 값은 {2}입니다.".format( w1, w2, result))
+        print("{0}과 {1} 의 cosine similarity 값은 {2}입니다.\n".format( w1, w2, result))
+
+
+    # <4> 프로그램 종료
+    @jit
+    def quit(self):
+        sys.exit()
 
 check = word_analysis()
 while(1):
     print("<1> 유사한 관계의 단어 찾기\n"
           "<2> 입력한 단어와 가장 가까운 N개의 단어 찾기\n"
-          "<3> 두 단어의 유사도 확인하기(-1과 1 사이의 값을 리턴)\n")
+          "<3> 두 단어의 유사도 확인하기(-1과 1 사이의 값을 리턴)\n"
+          "<4> 프로그램 종료\n")
     menu = int(input("작업을 원하는 메뉴의 번호를 입력하세요: "))
 
     if menu == 1:
@@ -92,5 +98,7 @@ while(1):
         check.similar()
     elif menu == 3:
         check.nearest()
+    elif menu == 4:
+        check.quit()
     else:
         print("잘못된 값을 입력하였습니다. 유효한 메뉴 번호를 입력해주세요.")
