@@ -74,8 +74,8 @@ class word_analysis():
     def nearest(self):
         w1 = input("첫 번째 단어를 입력하세요: ")
         w2 = input("두 번째 단어를 입력하세요: ")
-        v1 = self.getVector(w1)
-        v2 = self.getVector(w2)
+        v1 = self.getVector(w1); v1 = v1.reshape([1,len(v1)])
+        v2 = self.getVector(w2); v2 = v2.reshape([1,len(v2)])
         result = self.COSIM(v1, v2)
         print("{0}과 {1} 의 cosine similarity 값은 {2}입니다.".format( w1, w2, result))
 
