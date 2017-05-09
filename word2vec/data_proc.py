@@ -59,7 +59,7 @@ class dataprocessing :
         word_idx = word_prob.columns
         word_prob = word_prob.values[0].tolist()
 
-        return (word_matrix, unique_words_n, word_idx, word_prob)
+        return (word_matrix, word_matrix, unique_words_n, word_idx, word_prob)
 
 
 

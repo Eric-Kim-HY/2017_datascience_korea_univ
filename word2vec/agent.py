@@ -13,16 +13,14 @@ class agent:
         self.learning_rate = learning_rate  # learning rate
         self.vec_dim = vec_dim  # 사용할 단어 벡터의 차원
         self.n_words = None # unique 단어 개수
-        self.W = None  # 부모 weight 함수
+        self.W_1 = None  # 부모 weight 함수
+        self.W_2 = None  # 부모 weight 함수
         self.texts = None
         self.n_total_words = None  #중복 포함한 전체 단어 갯수
         self.dataproc = dataprocessing()
         self.unique_words_n = None # 총 단어 종류 수
         self.word_idx = None # 단어 확률분포에 대응되는 idx word
         self.word_prob = None  # 단어 확률 분포 변수( list 할당 예정 )
-        #config = tf.ConfigProto(intra_op_parallelism_threads = n_cores )
-        #self.sess = tf.Session(config = config) # tensorflow graph 인자 (train_tf에서 사용)
-
         pass
 
     @jit
@@ -41,12 +39,12 @@ class agent:
         self.n_total_words = len(self.texts)
 
         # 웨이트 들고오기
-        self.W, self.unique_words_n, self.word_idx, self.word_prob =\
+        self.W_1, self.W_2, self.unique_words_n, self.word_idx, self.word_prob =\
                 self.dataproc.build_word_matrix(self.texts, self.vec_dim)
         print("Built the parent matrix")
 
         # Corpus 에서 전체 unique 단어 개수 class variable에 저장
-        self.n_words = self.W.shape[0]
+        self.n_words = self.W_1.shape[0]
 
 
         print("Initialized!")
@@ -71,7 +69,7 @@ class agent:
         ## define temporal input word vector and Weight 2 ##
         W_2_idx = set(positive_sample + negative_sample)
         pos_idx = set(positive_sample)
-        input_word_vector = self.W.ix[input_word].values
+        input_word_vector = self.W_1.ix[input_word].values
 
         ## Set input values ##
 
@@ -80,7 +78,7 @@ class agent:
         hidden_layer = hidden_layer.reshape([1,self.vec_dim])
 
         # Shape [n_sample,vec_dim]
-        W_2 = self.W.ix[W_2_idx]
+        W_2 = self.W_2.ix[W_2_idx]
 
         # Shape [n_sample, 1], define t
         output_size = len(W_2_idx)
@@ -111,12 +109,12 @@ class agent:
 
         ## Update Weight ##
 
-        self.W.ix[input_word] = input_word_vector_updated
-        self.W.ix[W_2_idx] = W_2_updated
+        self.W_1.ix[input_word] = input_word_vector_updated
+        self.W_2.ix[W_2_idx] = W_2_updated
 
     @jit
     def save_model(self):
-        self.W.to_csv('./wordvector.csv')
+        self.W_2.to_csv('./wordvector.csv')
 
     @jit
     def load_model(self):

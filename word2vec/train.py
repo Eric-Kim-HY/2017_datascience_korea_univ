@@ -36,7 +36,7 @@ def main_function(j) :
     input_word = Agent.texts[idx]
 
     # positive sampling
-    positive_sample = Agent.texts[idx - n_window: idx - 1] + Agent.texts[idx + 1: idx + n_window]
+    positive_sample = Agent.texts[idx - n_window: idx ] + Agent.texts[idx + 1: idx + n_window + 1]
 
     # negative samping
     negative_sample_idx = Agent.negative_sampling(n_samples=negative_sample)
