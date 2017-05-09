@@ -73,9 +73,9 @@ class agent:
 
         ## Set input values ##
 
-        # Shape [ 1, vec_dim ]
+        # Shape [ vec_dim, 1 ]
         hidden_layer = input_word_vector
-        hidden_layer = hidden_layer.reshape([1,self.vec_dim])
+        hidden_layer = hidden_layer.reshape([self.vec_dim,1])
 
         # Shape [n_sample,vec_dim]
         W_2 = self.W_2.ix[W_2_idx]
@@ -92,20 +92,20 @@ class agent:
         output_layer = self.sigmoid(np.dot(W_2, hidden_layer))  # 해당 단어가 positive sample과 함께 등장할 확률을 리턴한다
 
         # Shape [n_sample, 1] calculate first cost
-        loss1 = output_layer - t
+        loss1 = output_layer.T - t
         loss1 = loss1.reshape([output_size,1]) # dot 계산을 위해서 reshape
 
         # Shape [n_sample, vec_dim]
-        E = np.dot(loss1, hidden_layer)
+        E = np.dot(loss1, hidden_layer.T)
 
         # Shape [n_sample, vec_dim]
         W_2_updated = W_2 - (self.learning_rate * E )
 
         # Shape [vec_dim], reduced sum 구현 되도록 축 정하기
-        EH = np.sum(np.dot(loss1, hidden_layer), axis = 0)
+        EH = np.dot(loss1.T,W_2)
 
         # Shape [vec_dim], input word vector update
-        input_word_vector_updated = input_word_vector - self.learning_rate * EH.T
+        input_word_vector_updated = input_word_vector - self.learning_rate * EH
 
         ## Update Weight ##
 
