@@ -8,10 +8,10 @@ from multiprocessing import Pool   # Multiprocessing 을 위한 라이브러리 
 vec_dim = 100
 n_window = 5
 whole_window = n_window * 2 + 1
-learning_rate = 0.01
-iteration = 1  # 반복학습횟수
-negative_sample = 20 # negative sample 개수
-n_cores = 4  # multiprocessing 동시 실행 프로세스 수
+learning_rate = 0.025
+iteration = 5  # 반복학습횟수
+negative_sample = 5 # negative sample 개수
+n_cores = 2  # multiprocessing 동시 실행 프로세스 수
 load_model = False  # 기존 학습된 parent weight loading 여부
 
 # Agent 클래스 불러오기

@@ -34,7 +34,7 @@ class dataprocessing :
         unique_words_n = len(set(tokens))
         # build standard word matrix
         # initialize the elements values
-        word_matrix = pd.DataFrame(data = np.random.normal(0,0.5,size = (unique_words_n,vector_dim)),
+        word_matrix = pd.DataFrame(data = np.random.normal(0,0.05,size = (unique_words_n,vector_dim)),
                                    index = set(tokens), columns=range(vector_dim), dtype=np.float32)
 
         # truncate outliers
@@ -59,7 +59,7 @@ class dataprocessing :
         word_idx = word_prob.columns
         word_prob = word_prob.values[0].tolist()
 
-        return (word_matrix, word_matrix, unique_words_n, word_idx, word_prob)
+        return (word_matrix, unique_words_n, word_idx, word_prob)
 
 
 
