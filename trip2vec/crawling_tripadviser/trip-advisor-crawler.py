@@ -116,6 +116,7 @@ def getreviewpages(domain, activitytype, cityid, activityid, timeout, maxretries
                 file.write(htmlpage.decode('utf-8'))
 
             pageids = set(reviewre.findall(htmlpage.decode('utf-8')))
+            print(pageids)
             allin = True
             for id in pageids:
                 if not id in reviewids:
@@ -131,7 +132,12 @@ def getreviewpages(domain, activitytype, cityid, activityid, timeout, maxretries
                 pageids = set(pageids)
 
             reviewids.update(pageids)
+
+            # 최대 1000개 페이지만 가져요기
             activitypage += 1
+
+            if activitypage == 1000 :
+                break
 
     return reviewids
 
