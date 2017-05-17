@@ -190,7 +190,7 @@ def main():
             '-t', '--timeout', help='Timeout in seconds for http connections. Default: 180',
             required=False, type=int, default=180)
     parser.add_argument(
-            '-p', '--pause', help='Seconds to wait between http requests. Default: 0.2', required=False, default=0.2,
+            '-p', '--pause', help='Seconds to wait between http requests. Default: 0.001', required=False, default=0.001, # change pause time
             type=float)
     parser.add_argument(
             '-m', '--maxreviews', help='Maximum number of reviews per item to download. Default:unlimited',
