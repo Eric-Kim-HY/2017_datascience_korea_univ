@@ -2,6 +2,7 @@ import gensim
 import pandas as pd
 from sklearn import utils
 import re
+
 ### Set Hyperparameter ###
 VECTOR_SIZE = 300
 WINDOW = 10
@@ -9,10 +10,8 @@ MIN_COUNT = 5
 PARALELL_SIZE = 8
 LEARNING_RATE = 0.025
 MIN_LEARNING_RATE = 0.025
+
 ITERATIONS = 20
-LOAD_MODEL = True
-
-
 
 ### Set Functions ###
 
@@ -39,7 +38,7 @@ def label_dataframe(df):
     for idx, row in df.iterrows():
         temp_corpus = cleanText(row['review_text'])
         trip_id = row['attraction']
-        ret.append(LabeledSentence(temp_corpus, trip_id))
+        ret1.append(LabeledSentence(temp_corpus, trip_id))
 
     return ret
 
@@ -55,11 +54,19 @@ raw_data = raw_data[raw_data['city'] =='Paris']
 # Attraction 앞 about 제거
 raw_data['attraction'] = raw_data['attraction'].apply(treat_attraction)
 
-attraction_list = list(set(raw_data['attraction'].values))
 
-# Load model
-model = gensim.models.Doc2Vec.load('Model_after_train')
 
-print(attraction_list)
 
-#TODO document anology
+
+# Define model
+model = gensim.models.Doc2Vec(size = VECTOR_SIZE, window = WINDOW, min_count= MIN_COUNT,
+                              workers=PARALELL_SIZE, alpha=LEARNING_RATE, min_alpha=MIN_LEARNING_RATE)
+
+model.build_vocab(train_data)
+
+for epoch in range(ITERATIONS):
+    model.train(utils.shuffle(train_data),
+                total_examples = len(train_data) ,
+                epochs = model.iter)
+
+model.save('Model_after_train')
