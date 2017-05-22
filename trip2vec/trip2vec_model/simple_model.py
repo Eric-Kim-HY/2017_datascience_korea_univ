@@ -10,7 +10,7 @@ PARALELL_SIZE = 12
 LEARNING_RATE = 0.025
 MIN_LEARNING_RATE = 0.025
 
-ITERATIONS = 10
+ITERATIONS = 20
 
 ### Set Functions ###
 
@@ -63,9 +63,11 @@ train_data, all_corpus = label_dataframe(raw_data)
 model = gensim.models.Doc2Vec(size = VECTOR_SIZE, window = WINDOW, min_count= MIN_COUNT,
                               workers=PARALELL_SIZE, alpha=LEARNING_RATE, min_alpha=MIN_LEARNING_RATE)
 
-model.build_vocab(all_corpus)
+model.build_vocab(train_data)
 
 for epoch in range(ITERATIONS):
-    model.train(utils.shuffle(train_data))
+    model.train(utils.shuffle(train_data),
+                total_examples = len(train_data) ,
+                epochs = model.iter)
 
 model.save('Model_after_train')
