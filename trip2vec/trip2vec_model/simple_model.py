@@ -2,7 +2,9 @@ import gensim
 import pandas as pd
 from sklearn import utils
 import re
-### Set Hyperparameter ###
+
+
+### Set Hyperparameter and settings ###
 VECTOR_SIZE = 300
 WINDOW = 10
 MIN_COUNT = 5
@@ -38,7 +40,7 @@ def label_dataframe(df):
     for idx, row in df.iterrows():
         temp_corpus = cleanText(row['review_text'])
         trip_id = row['attraction']
-        ret.append(LabeledSentence(temp_corpus, trip_id))
+        ret.append(LabeledSentence(temp_corpus, [trip_id]))
 
     return ret
 
@@ -57,11 +59,11 @@ raw_data['attraction'] = raw_data['attraction'].apply(treat_attraction)
 # Process Train Data
 train_data = label_dataframe(raw_data)
 
-# Define or Load model
+# Define model or Load model ( if LOAD_MODEL is True )
 if LOAD_MODEL :
     model = gensim.models.Doc2Vec.load(MODEL_NAME)
 else :
-    model = gensim.models.Doc2Vec(size = VECTOR_SIZE, window = WINDOW, min_count= MIN_COUNT,
+    model = gensim.models.doc2vec.Doc2Vec(size = VECTOR_SIZE, window = WINDOW, min_count= MIN_COUNT,
                               workers=PARALELL_SIZE, alpha=LEARNING_RATE, min_alpha=MIN_LEARNING_RATE)
 
 model.build_vocab(train_data)

@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn import utils
 import re
 
-### Set Hyperparameter ###
+### Set Hyperparameter and settings ###
 VECTOR_SIZE = 300
 WINDOW = 10
 MIN_COUNT = 5
@@ -57,6 +57,11 @@ raw_data['attraction'] = raw_data['attraction'].apply(treat_attraction)
 # Load model
 model = gensim.models.Doc2Vec.load(MODEL_NAME)
 
+# Introduce attracion list to use trip site analogy
 print(attraction_list)
 
-#TODO document anology
+# 유사한 여행지 구하기
+model.docvecs.most_similar('Palais Royal')
+
+# 여행지 간 유사도 구하기
+model.docvecs.similarity('Palais Royal','St. Sulpice Fountain')
