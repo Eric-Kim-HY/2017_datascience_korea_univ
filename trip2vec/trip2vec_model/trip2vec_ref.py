@@ -190,6 +190,7 @@ class Doc2Vec(BaseEstimator, TransformerMixin):
             embed_d = tf.nn.embedding_lookup(self.doc_embeddings, self.train_dataset[:, self.window_size])
             embed.append(embed_d)
             # concat word and doc vectors
+            print(embed)
             self.embed = tf.concat(1, embed)
 
             # Compute the loss, using a sample of the negative labels each time.
