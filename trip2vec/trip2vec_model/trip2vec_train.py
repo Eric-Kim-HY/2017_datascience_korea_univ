@@ -11,12 +11,19 @@ MIN_LEARNING_RATE = 0.025
 ITERATIONS = 20
 LOAD_MODEL = False
 MODEL_NAME = 'TripAdvisor_trip2vec'
-
-
+NEG_SAMPLES = 64
+EMBEDDING_SIZE = 200
+BATCH_SIZE = 50
+OPTIMIZER = 'Adagrad' # 'Adagrad', 'SGD'
+LOSS_TYPE = 'sampled_softmax_loss'  # 'sampled_softmax_loss'. 'nce_loss
+CONCAT = True # 워드 아이디 트립 벡터를 합쳐서 쓸지 여부
+CITY = 'paris'
 if __name__ == "__main__":
     # csv 불러오기
     trip = trip2vec(WINDOW, PARALELL_SIZE, LEARNING_RATE,
-                 ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE)
+                 ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
+                    EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
+                    OPTIMIZER, LOSS_TYPE, CONCAT, CITY)
     data = trip.load_review()
 
     # Paris data 만 가져오기
