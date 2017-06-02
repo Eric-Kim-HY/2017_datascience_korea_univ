@@ -18,6 +18,11 @@ OPTIMIZER = 'Adagrad' # 'Adagrad', 'SGD'
 LOSS_TYPE = 'sampled_softmax_loss'  # 'sampled_softmax_loss'. 'nce_loss
 CONCAT = True # 워드 아이디 트립 벡터를 합쳐서 쓸지 여부
 CITY = 'paris'
+
+
+
+
+
 if __name__ == "__main__":
     # csv 불러오기
     trip = trip2vec(WINDOW, PARALELL_SIZE, LEARNING_RATE,
@@ -29,12 +34,11 @@ if __name__ == "__main__":
     # Paris data 만 가져오기
     data = data[data['city'] == 'Paris']
 
-    # Attraction 앞 about 제거
-    data['attraction'] = data['attraction'].apply(trip.treat_attraction)
-
     # 리뷰 읽어와 데이터 준비 및 여행지,리뷰어아이디, 워드 index 구해 np.array로 메모리 저장
     data, trip_ids, reviewer_ids, reviews = trip.label_dataframe(data)
-    print("Read all review data ... start build matrix ...")
+    print("Read all review data ... .")
+
+    trip.build_batch()
 
     #TODO 필요없을지도 ... 다시 ref 잘 살펴보기기
    # np.array로 각 여행지, 리뷰어아이디, 단어 벡터 생성

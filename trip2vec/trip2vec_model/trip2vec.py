@@ -48,16 +48,13 @@ class preprocess():
         corpus = corpus.split()
         return corpus
 
-    # Attraction preprocessing
-    def treat_attraction(self, s):
-        m = self.ATTRACTION_RE.search(s)
-        if m: s = re.sub(m.group(), '', s)
-        return s
-
     # 여행지 아이디, 리뷰어 아이디, 리뷰 말뭉치를 하나의 리스트에 저장
     def label_dataframe(self, df):
         ret = []
         trip_ids = set(); reviewer_ids = set(); reviews = set()
+
+        #TODO alphabet 아닌 행 모두 제거하는 작업
+        #df = df['reviews']....
         for idx, row in df.iterrows():
             temp_corpus = self.cleanText(row['review_text'])
             trip_id = row['attraction']
@@ -85,7 +82,8 @@ class preprocess():
 
     # 리뷰 파일 csv 를 불러오는 함수
     def load_review(self):
-        raw_data = pd.read_csv('./trip.csv', header=0)
+        path = './' + self.city + '.csv'
+        raw_data = pd.read_csv(path, header=0)
         return raw_data
 
 
@@ -93,12 +91,13 @@ class preprocess():
 class trip2vec(preprocess):
     def __init__(self):
         pass
-
+    """
     # word, reviewer, trip site 매트릭스를 생성하는 함수
     def build_matrix(self):
         self.trip_matrix = np.random.uniform(-1,1,[self.trip_len, self.vector_size])
         self.id_matrix = np.random.uniform(-1,1,[self.id_len, self.vector_size])
         self.word_matrix = np.random.uniform(-1,1,[self.review_len, self.vector_size])
+    """
 
     def generate_batch_pvdm(self, word_ids, id_ids, trip_ids, batch_size, window_size):
         '''
@@ -236,11 +235,22 @@ class trip2vec(preprocess):
             # create a saver
             self.saver = tf.train.Saver()
 
+    def word2index(self):
+        #np.where() or np.argwhere
+        #TODO 각 유니크 단어사전을 통해 단어로 구성된 문서들을 모두 index로 바꿔주기.....
+
+    def build_batch(self):
+
+
+
+
     def fit(self, docs):
         '''
         words: a list of words.
         '''
         # pre-process words to generate indices and dictionaries
+        #TODO build my own dictionaries 다른 함수로 빼서 별개로 실행하기
+        # 한번에 리뷰 여러개 넣기
         doc_ids, word_ids = self._build_dictionaries(docs)
 
         # with self.sess as session:
@@ -251,10 +261,12 @@ class trip2vec(preprocess):
         average_loss = 0
         print("Initialized")
         for step in range(self.n_steps):
+            #TODO generate batch 까지 다른 함수로 같이 빼서 batch data, label만 fit 으로 보내기
             batch_data, batch_labels = self.generate_batch(doc_ids, word_ids,
                                                            self.batch_size, self.window_size)
             feed_dict = {self.train_dataset: batch_data, self.train_labels: batch_labels}
             op, l = session.run([self.optimizer, self.loss], feed_dict=feed_dict)
+            #TODO step 줄이기
             average_loss += l
             if step % 2000 == 0:
                 if step > 0:
@@ -264,6 +276,7 @@ class trip2vec(preprocess):
                 average_loss = 0
 
         # bind embedding matrices to self
+        #TODO trip id embedding 추가
         self.word_embeddings = session.run(self.normalized_word_embeddings)
         self.doc_embeddings = session.run(self.normalized_doc_embeddings)
 
@@ -303,33 +316,3 @@ class trip2vec(preprocess):
         estimator.reverse_dictionary = {int(key): val for key, val in reverse_dictionary.items()}
 
         return estimator
-
-    # tensorflow 그래프를 빌딩하는 함수
-    def build_tensor_graph(self):
-        
-        pass
-
-
-
-
-if __name__ == "__main__":
-    # csv 불러오기
-    trip = trip2vec()
-    data = trip.load_review()
-
-    # Paris data 만 가져오기
-    data = data[data['city'] == 'Paris']
-
-    # Attraction 앞 about 제거
-    data['attraction'] = data['attraction'].apply(trip.treat_attraction)
-
-    # 리뷰 읽어와 데이터 준비 및 여행지,리뷰어아이디, 워드 index 구해 np.array로 메모리 저장
-    data, trip_ids, reviewer_ids, reviews = trip.label_dataframe(data)
-    print("Read all review data ... start build matrix ...")
-
-    #TODO 필요없을지도 ... 다시 ref 잘 살펴보기기
-   # np.array로 각 여행지, 리뷰어아이디, 단어 벡터 생성
-    trip.build_matrix()
-
-    # tensorflow graph 생성
-    ##TODO 레퍼런스 자료 잘 갖춰져 있어 짜맞춰 넣어보기 화이팅~!!
