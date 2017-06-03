@@ -3,7 +3,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import tensorflow as tf
-import nltk
+import gensim
 import pandas as pd
 import numpy as np
 import re
@@ -12,33 +12,13 @@ import json
 import collections
 from itertools import compress
 import math
+import time
 
 
 # 리뷰 전처리 클래스 (구두점 제거, 텍스트 보정, 리뷰 불러오기, 데이터 준비하기)
 class preprocess():
-    def __init__(self, WINDOW, PARALELL_SIZE, LEARNING_RATE,
-                 ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
-                 EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
-                 OPTIMIZER, LOSS_TYPE, CONCAT, CITY):
-        self.window_size = WINDOW
-        self.paralell_size = PARALELL_SIZE
-        self.learning_rate = LEARNING_RATE
-        self.iterations = ITERATIONS
-        self.model_name = MODEL_NAME
-        self.load_model = LOAD_MODEL
-        self.vector_size = VECTOR_SIZE
-        self.ATTRACTION_RE = re.compile('.*about.')
-        self.embedding_size_w = EMBEDDING_SIZE
-        self.embedding_size_i = EMBEDDING_SIZE
-        self.embedding_size_t = EMBEDDING_SIZE
-        self.batch_size = BATCH_SIZE
-        self.optimize = OPTIMIZER
-        self.loss_type = LOSS_TYPE
-        self.n_neg_samples = NEG_SAMPLES
-        self.concat = CONCAT
-        self.city = CITY
-
-
+    def __init__(self):
+        pass
 
     # Preprocessing function
     def cleanText(self, corpus):
@@ -50,33 +30,35 @@ class preprocess():
 
     # 여행지 아이디, 리뷰어 아이디, 리뷰 말뭉치를 하나의 리스트에 저장
     def label_dataframe(self, df):
+        st = time.time()
+        print('Start labeling')
         ret = []
-        trip_ids = set(); reviewer_ids = set(); reviews = set()
+        trip_ids = []; reviewer_ids = []; reviews = []
 
         #TODO alphabet 아닌 행 모두 제거하는 작업
         #df = df['reviews']....
         for idx, row in df.iterrows():
             temp_corpus = self.cleanText(row['review_text'])
             trip_id = row['attraction']
-            reviewer_id = row['reviewer_id']
+            reviewer_id = row['user_id']
             one_review = [trip_id,reviewer_id,temp_corpus]
             ret.append(one_review)
 
             # Build trip site, reviewer id, review index
-            trip_ids = trip_ids.union([trip_id])
-            reviewer_ids = reviewer_ids.union([reviewer_id])
-            reviews = reviews.union(temp_corpus)
+            trip_ids.append(trip_id)
+            reviewer_ids.append(reviewer_id)
+            reviews.extend(temp_corpus)
 
         # 각 분야별 유니크한 단어들 모아 반환하기
-        trip_ids = np.array(list(trip_ids))
-        reviewer_ids = np.array(list(reviewer_ids))
-        reviews = np.array(list(reviews))
+        trip_ids = np.array(list(set(trip_ids)))
+        reviewer_ids = np.array(list(set(reviewer_ids)))
+        reviews = np.array(list(set(reviews)))
 
         # 각 섹터별별 유니크한 단 길이 클래스 변수에 저장
         self.trip_size = len(trip_ids)
         self.id_size = len(reviewer_ids)
         self.vocabulary_size = len(reviews)
-
+        print("It took %.2f seconds to labeling data"%(time.time()-st))
         return (ret, trip_ids, reviewer_ids, reviews)
 
 
@@ -87,10 +69,28 @@ class preprocess():
         return raw_data
 
 
-
 class trip2vec(preprocess):
-    def __init__(self):
-        pass
+    def __init__(self, WINDOW, PARALELL_SIZE, LEARNING_RATE,
+                 ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
+                 EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
+                 OPTIMIZER, LOSS_TYPE, CONCAT, CITY):
+        self.window_size = WINDOW
+        self.paralell_size = PARALELL_SIZE
+        self.learning_rate = LEARNING_RATE
+        self.iterations = ITERATIONS
+        self.model_name = MODEL_NAME
+        self.load_model = LOAD_MODEL
+        self.vector_size = VECTOR_SIZE
+        self.embedding_size_w = EMBEDDING_SIZE
+        self.embedding_size_i = EMBEDDING_SIZE
+        self.embedding_size_t = EMBEDDING_SIZE
+        self.batch_size = BATCH_SIZE
+        self.optimize = OPTIMIZER
+        self.loss_type = LOSS_TYPE
+        self.n_neg_samples = NEG_SAMPLES
+        self.concat = CONCAT
+        self.city = CITY
+        self.Dict = gensim.corpora.dictionary.Dictionary
     """
     # word, reviewer, trip site 매트릭스를 생성하는 함수
     def build_matrix(self):
@@ -235,12 +235,35 @@ class trip2vec(preprocess):
             # create a saver
             self.saver = tf.train.Saver()
 
-    def word2index(self):
-        #np.where() or np.argwhere
-        #TODO 각 유니크 단어사전을 통해 단어로 구성된 문서들을 모두 index로 바꿔주기.....
+    # 각 유니크 단어사전을 통해 단어로 구성된 문서들을 모두 index로 바꿔주기
+    def word2index(self, data, trip_ids, reviewer_ids, reviews):
+        st = time.time()
+        data_idx = []
+
+        # Build trip, id, word dictionary
+        self.trip_dict = self.Dict([trip_ids]).token2id
+        self.id_dict = self.Dict([reviewer_ids]).token2id
+        self.word_dict = self.Dict([reviews]).token2id
+        for review in data :
+            trip_id_idx = self.trip_dict[review[0]]
+            try :
+                reviewer_id_idx = self.id_dict[review[1]]
+            except : continue
+
+            review_idx = []
+            for word in review[2] :
+                review_idx.append(self.word_dict[word])
+
+            review_len = len(review_idx)
+            trip_id_idx = [trip_id_idx] * review_len
+            reviewer_id_idx = [reviewer_id_idx] * review_len
+
+            data_idx.append([trip_id_idx, reviewer_id_idx, review_idx])
+        print("It took %.2f seconds to make index"%(time.time() - st))
+        return data_idx
 
     def build_batch(self):
-
+        pass
 
 
 

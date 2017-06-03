@@ -24,20 +24,23 @@ CITY = 'paris'
 
 
 if __name__ == "__main__":
-    # csv 불러오기
+    # 클래스 불러오기
     trip = trip2vec(WINDOW, PARALELL_SIZE, LEARNING_RATE,
                  ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
                     EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
                     OPTIMIZER, LOSS_TYPE, CONCAT, CITY)
+    # CSV 불러오기
     data = trip.load_review()
-
-    # Paris data 만 가져오기
-    data = data[data['city'] == 'Paris']
 
     # 리뷰 읽어와 데이터 준비 및 여행지,리뷰어아이디, 워드 index 구해 np.array로 메모리 저장
     data, trip_ids, reviewer_ids, reviews = trip.label_dataframe(data)
     print("Read all review data ... .")
 
+    # 단어, 아이디, 여행지 단어 뭉치들을 숫자 인덱스로 바꿔주기
+    data_idx = trip.word2index(data, trip_ids, reviewer_ids, reviews)
+
+
+    """
     trip.build_batch()
 
     #TODO 필요없을지도 ... 다시 ref 잘 살펴보기기
@@ -46,3 +49,5 @@ if __name__ == "__main__":
 
     # tensorflow graph 생성
     ##TODO 레퍼런스 자료 잘 갖춰져 있어 짜맞춰 넣어보기 화이팅~!!
+    
+    """
