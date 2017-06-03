@@ -129,9 +129,9 @@ class trip2vec(preprocess):
         batch_size: number of words in each mini-batch
         window_size: number of leading words before the target word
         '''
-        global data_index
+
         assert batch_size % window_size == 0
-        batch = np.ndarray(shape=(batch_size, window_size + 1), dtype=np.float32)
+        batch = np.ndarray(shape=(batch_size, window_size + 2), dtype=np.float32)
         labels = np.ndarray(shape=(batch_size, 1), dtype=np.float32)
         span = window_size + 1
         buffer = collections.deque(maxlen=span)  # used for collecting word_ids[data_index] in the sliding window
@@ -139,10 +139,10 @@ class trip2vec(preprocess):
         buffer_trip = collections.deque(maxlen=span)  # collecting id of documents in the sliding window
         # collect the first window of words
         for _ in range(span):
-            buffer.append(word_ids[data_index])
-            buffer_id.append(trip_ids[data_index])
-            buffer_trip.append(trip_ids[data_index])
-            data_index = (data_index + 1) % len(word_ids)
+            buffer.append(word_ids[self.data_index])
+            buffer_id.append(id_ids[self.data_index])
+            buffer_trip.append(trip_ids[self.data_index])
+            self.data_index = (self.data_index + 1) % len(word_ids)
 
         mask = [1] * span
         mask[-1] = 0
@@ -152,14 +152,14 @@ class trip2vec(preprocess):
                 id_id = buffer_id[-1]
                 trip_id = buffer_trip[-1]
                 # all leading words and the doc_id
-                batch[i, :] = list(compress(buffer, mask)) + +[id_id] + [trip_id]
+                batch[i, :] = list(compress(buffer, mask)) +[id_id] + [trip_id]
                 labels[i, 0] = buffer[-1]  # the last word at end of the sliding window
                 i += 1
             # move the sliding window
-            buffer.append(word_ids[data_index])
-            buffer_id.append(id_ids[data_index])
-            buffer_trip.append(trip_ids[data_index])
-            data_index = (data_index + 1) % len(word_ids)
+            buffer.append(word_ids[self.data_index])
+            buffer_id.append(id_ids[self.data_index])
+            buffer_trip.append(trip_ids[self.data_index])
+            self.data_index = (self.data_index + 1) % len(word_ids)
 
         return batch, labels
 
@@ -178,7 +178,7 @@ class trip2vec(preprocess):
         self.graph = tf.Graph()
         with self.graph.as_default():
 
-            self.train_dataset = tf.placeholder(tf.int32, shape=[self.batch_size, self.window_size + 1])
+            self.train_dataset = tf.placeholder(tf.int32, shape=[self.batch_size, self.window_size + 2])
             self.train_labels = tf.placeholder(tf.float32, shape=[self.batch_size, 1])
             # Variables.
             # embeddings for words, W in paper
@@ -221,7 +221,7 @@ class trip2vec(preprocess):
                 embed.append(embed_w)
 
             embed_i = tf.nn.embedding_lookup(self.id_embeddings, self.train_dataset[:, self.window_size])
-            embed_t = tf.nn.embedding_lookup(self.trip_embeddings, self.train_dataset[:, self.window_size])
+            embed_t = tf.nn.embedding_lookup(self.trip_embeddings, self.train_dataset[:, self.window_size+1])
             embed.append(embed_i)
             embed.append(embed_t)
             # concat word and doc vectors
@@ -310,7 +310,7 @@ class trip2vec(preprocess):
         # with self.sess as session:
         session = self.sess
         session.run(self.init_op)
-        print("Initialized")
+        print("Initialized %d reviews will be learned"%(len(data_idx)))
 
         # k번 반복 학습
         for k in range(self.iterations) :
@@ -320,7 +320,7 @@ class trip2vec(preprocess):
                 trip_ids = data[0]
                 id_ids = data[1]
                 word_ids = data[2]
-
+                self.data_index = 0
                 batch_data, batch_labels = self.generate_batch_pvdm(trip_ids= trip_ids,
                                                                     id_ids = id_ids,
                                                                     word_ids = word_ids,
@@ -330,12 +330,13 @@ class trip2vec(preprocess):
                 op, l = session.run([self.optimizer, self.loss], feed_dict=feed_dict)
 
                 average_loss += l
-                if i % 5000 == 0:
+                if i % 200 == 0:
                     if i > 0:
-                        average_loss = average_loss / 2000
+                        average_loss = average_loss / 200
                     # The average loss is an estimate of the loss over the last 2000 batches.
                     print('Learning %.3f %% Average loss at step %d: %f' % (i/total_step,i, average_loss))
                     average_loss = 0
+                i += 1
 
         # bind embedding matrices to self
         self.word_embeddings = session.run(self.normalized_word_embeddings)
