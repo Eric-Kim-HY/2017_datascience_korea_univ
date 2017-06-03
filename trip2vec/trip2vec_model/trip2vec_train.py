@@ -39,6 +39,9 @@ if __name__ == "__main__":
     # 단어, 아이디, 여행지 단어 뭉치들을 숫자 인덱스로 바꿔주기
     data_idx = trip.word2index(data, trip_ids, reviewer_ids, reviews)
 
+    # 한 도시 학습 개시
+    trip.initialize()
+    trip.fit(data_idx = data_idx)
 
     """
     trip.build_batch()

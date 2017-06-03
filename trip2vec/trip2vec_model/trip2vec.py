@@ -17,7 +17,7 @@ import time
 
 # 리뷰 전처리 클래스 (구두점 제거, 텍스트 보정, 리뷰 불러오기, 데이터 준비하기)
 class preprocess():
-    def __init__(self):
+    def __init__(self) :
         pass
 
     # Preprocessing function
@@ -54,10 +54,6 @@ class preprocess():
         reviewer_ids = np.array(list(set(reviewer_ids)))
         reviews = np.array(list(set(reviews)))
 
-        # 각 섹터별별 유니크한 단 길이 클래스 변수에 저장
-        self.trip_size = len(trip_ids)
-        self.id_size = len(reviewer_ids)
-        self.vocabulary_size = len(reviews)
         print("It took %.2f seconds to labeling data"%(time.time()-st))
         return (ret, trip_ids, reviewer_ids, reviews)
 
@@ -70,6 +66,7 @@ class preprocess():
 
 
 class trip2vec(preprocess):
+
     def __init__(self, WINDOW, PARALELL_SIZE, LEARNING_RATE,
                  ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
                  EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
@@ -91,13 +88,12 @@ class trip2vec(preprocess):
         self.concat = CONCAT
         self.city = CITY
         self.Dict = gensim.corpora.dictionary.Dictionary
-    """
-    # word, reviewer, trip site 매트릭스를 생성하는 함수
-    def build_matrix(self):
-        self.trip_matrix = np.random.uniform(-1,1,[self.trip_len, self.vector_size])
-        self.id_matrix = np.random.uniform(-1,1,[self.id_len, self.vector_size])
-        self.word_matrix = np.random.uniform(-1,1,[self.review_len, self.vector_size])
-    """
+        self.vocabulary_size = None
+        self.id_size = None
+        self.vocabulary_size = None
+
+        pass
+
 
     def generate_batch_pvdm(self, word_ids, id_ids, trip_ids, batch_size, window_size):
         '''
@@ -114,8 +110,8 @@ class trip2vec(preprocess):
         '''
         global data_index
         assert batch_size % window_size == 0
-        batch = np.ndarray(shape=(batch_size, window_size + 1), dtype=np.int32)
-        labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
+        batch = np.ndarray(shape=(batch_size, window_size + 1), dtype=np.float32)
+        labels = np.ndarray(shape=(batch_size, 1), dtype=np.float32)
         span = window_size + 1
         buffer = collections.deque(maxlen=span)  # used for collecting word_ids[data_index] in the sliding window
         buffer_id = collections.deque(maxlen=span)
@@ -146,6 +142,12 @@ class trip2vec(preprocess):
 
         return batch, labels
 
+    # set graph initialized
+    def initialize(self):
+        # init all variables in a tensorflow graph
+        self._init_graph()
+        # create a session
+        self.sess = tf.Session(graph=self.graph)
 
     def _init_graph(self):
         '''
@@ -156,7 +158,7 @@ class trip2vec(preprocess):
         with self.graph.as_default():
 
             self.train_dataset = tf.placeholder(tf.int32, shape=[self.batch_size, self.window_size + 1])
-            self.train_labels = tf.placeholder(tf.int32, shape=[self.batch_size, 1])
+            self.train_labels = tf.placeholder(tf.float32, shape=[self.batch_size, 1])
             # Variables.
             # embeddings for words, W in paper
             self.word_embeddings = tf.Variable(
@@ -225,10 +227,10 @@ class trip2vec(preprocess):
             self.normalized_word_embeddings = self.word_embeddings / norm_w
 
             norm_i = tf.sqrt(tf.reduce_sum(tf.square(self.id_embeddings), 1, keep_dims=True))
-            self.normalized_doc_embeddings = self.id_embeddings / norm_i
+            self.normalized_id_embeddings = self.id_embeddings / norm_i
 
             norm_t = tf.sqrt(tf.reduce_sum(tf.square(self.trip_embeddings), 1, keep_dims=True))
-            self.normalized_doc_embeddings = self.trip_embeddings / norm_t
+            self.normalized_trip_embeddings = self.trip_embeddings / norm_t
 
             # init op
             self.init_op = tf.global_variables_initializer()
@@ -239,6 +241,11 @@ class trip2vec(preprocess):
     def word2index(self, data, trip_ids, reviewer_ids, reviews):
         st = time.time()
         data_idx = []
+
+        # 각 섹터별별 유니크한 단 길이 클래스 변수에 저장
+        self.trip_size = len(trip_ids)
+        self.id_size = len(reviewer_ids)
+        self.vocabulary_size = len(reviews)
 
         # Build trip, id, word dictionary
         self.trip_dict = self.Dict([trip_ids]).token2id
@@ -267,41 +274,44 @@ class trip2vec(preprocess):
 
 
 
-    def fit(self, docs):
+    def fit(self, data_idx):
         '''
-        words: a list of words.
+        trip_ids : a list of same trip ids in one review
+        id_ids : a list of same ids in one review
+        word_ids: a list of words in one review.
         '''
-        # pre-process words to generate indices and dictionaries
-        #TODO build my own dictionaries 다른 함수로 빼서 별개로 실행하기
-        # 한번에 리뷰 여러개 넣기
-        doc_ids, word_ids = self._build_dictionaries(docs)
-
         # with self.sess as session:
         session = self.sess
-
         session.run(self.init_op)
-
-        average_loss = 0
         print("Initialized")
-        for step in range(self.n_steps):
-            #TODO generate batch 까지 다른 함수로 같이 빼서 batch data, label만 fit 으로 보내기
-            batch_data, batch_labels = self.generate_batch(doc_ids, word_ids,
-                                                           self.batch_size, self.window_size)
+
+        # set for index and calculate loss
+        average_loss = 0; i = 0; total_step = len(data_idx)
+        for data in data_idx :
+            trip_ids = data[0]
+            id_ids = data[1]
+            word_ids = data[2]
+
+            batch_data, batch_labels = self.generate_batch_pvdm(trip_ids= trip_ids,
+                                                                id_ids = id_ids,
+                                                                word_ids = word_ids,
+                                                                batch_size = self.batch_size,
+                                                                window_size = self.window_size)
             feed_dict = {self.train_dataset: batch_data, self.train_labels: batch_labels}
             op, l = session.run([self.optimizer, self.loss], feed_dict=feed_dict)
-            #TODO step 줄이기
+
             average_loss += l
-            if step % 2000 == 0:
-                if step > 0:
+            if i % 5000 == 0:
+                if i > 0:
                     average_loss = average_loss / 2000
                 # The average loss is an estimate of the loss over the last 2000 batches.
-                print('Average loss at step %d: %f' % (step, average_loss))
+                print('Learning %.3f %% Average loss at step %d: %f' % (i/total_step,i, average_loss))
                 average_loss = 0
 
         # bind embedding matrices to self
-        #TODO trip id embedding 추가
         self.word_embeddings = session.run(self.normalized_word_embeddings)
-        self.doc_embeddings = session.run(self.normalized_doc_embeddings)
+        self.id_embeddings = session.run(self.normalized_id_embeddings)
+        self.trip_embeddings = session.run(self.normalized_trip_embeddings)
 
         return self
 
