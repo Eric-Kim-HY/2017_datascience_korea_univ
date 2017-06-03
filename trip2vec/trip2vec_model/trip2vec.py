@@ -207,12 +207,21 @@ class trip2vec(preprocess):
             self.embed = tf.concat(values = embed, axis = 1)
 
             # Compute the loss, using a sample of the negative labels each time.
+            print(self.embed.shape, self.train_labels.shape, self.train_dataset.shape)
             if self.loss_type == 'sampled_softmax_loss':
-                loss = tf.nn.sampled_softmax_loss(self.weights, self.biases, self.embed,
-                                                  self.train_labels, self.n_neg_samples, self.vocabulary_size)
+                loss = tf.nn.sampled_softmax_loss(weights = self.weights,
+                                                  biases = self.biases,
+                                                  inputs = self.embed,
+                                                  labels = self.train_labels,
+                                                  num_sampled = self.n_neg_samples,
+                                                  num_classes = self.vocabulary_size)
             elif self.loss_type == 'nce_loss':
-                loss = tf.nn.nce_loss(self.weights, self.biases, self.embed,
-                                      self.train_labels, self.n_neg_samples, self.vocabulary_size)
+                loss = tf.nn.nce_loss(weights = self.weights,
+                                                  biases = self.biases,
+                                                  inputs = self.embed,
+                                                  labels = self.train_labels,
+                                                  num_sampled = self.n_neg_samples,
+                                                  num_classes = self.vocabulary_size)
             self.loss = tf.reduce_mean(loss)
 
             # Optimizer.
@@ -269,11 +278,6 @@ class trip2vec(preprocess):
         print("It took %.2f seconds to make index"%(time.time() - st))
         return data_idx
 
-    def build_batch(self):
-        pass
-
-
-
     def fit(self, data_idx):
         '''
         trip_ids : a list of same trip ids in one review
@@ -285,28 +289,30 @@ class trip2vec(preprocess):
         session.run(self.init_op)
         print("Initialized")
 
-        # set for index and calculate loss
-        average_loss = 0; i = 0; total_step = len(data_idx)
-        for data in data_idx :
-            trip_ids = data[0]
-            id_ids = data[1]
-            word_ids = data[2]
+        # k번 반복 학습
+        for k in self.iterations :
+            # set for index and calculate loss
+            average_loss = 0; i = 0; total_step = len(data_idx)
+            for data in data_idx :
+                trip_ids = data[0]
+                id_ids = data[1]
+                word_ids = data[2]
 
-            batch_data, batch_labels = self.generate_batch_pvdm(trip_ids= trip_ids,
-                                                                id_ids = id_ids,
-                                                                word_ids = word_ids,
-                                                                batch_size = self.batch_size,
-                                                                window_size = self.window_size)
-            feed_dict = {self.train_dataset: batch_data, self.train_labels: batch_labels}
-            op, l = session.run([self.optimizer, self.loss], feed_dict=feed_dict)
+                batch_data, batch_labels = self.generate_batch_pvdm(trip_ids= trip_ids,
+                                                                    id_ids = id_ids,
+                                                                    word_ids = word_ids,
+                                                                    batch_size = self.batch_size,
+                                                                    window_size = self.window_size)
+                feed_dict = {self.train_dataset: batch_data, self.train_labels: batch_labels}
+                op, l = session.run([self.optimizer, self.loss], feed_dict=feed_dict)
 
-            average_loss += l
-            if i % 5000 == 0:
-                if i > 0:
-                    average_loss = average_loss / 2000
-                # The average loss is an estimate of the loss over the last 2000 batches.
-                print('Learning %.3f %% Average loss at step %d: %f' % (i/total_step,i, average_loss))
-                average_loss = 0
+                average_loss += l
+                if i % 5000 == 0:
+                    if i > 0:
+                        average_loss = average_loss / 2000
+                    # The average loss is an estimate of the loss over the last 2000 batches.
+                    print('Learning %.3f %% Average loss at step %d: %f' % (i/total_step,i, average_loss))
+                    average_loss = 0
 
         # bind embedding matrices to self
         self.word_embeddings = session.run(self.normalized_word_embeddings)
@@ -337,15 +343,6 @@ class trip2vec(preprocess):
         path_dir = os.path.dirname(path)
         params = json.load(open(os.path.join(path_dir, 'model_params.json'), 'rb'))
         # init an instance of this class
-        estimator = Doc2Vec(**params)
+        estimator = trip2vec(**params)
         estimator._restore(path)
-        # evaluate the Variable embeddings and bind to estimator
-        estimator.word_embeddings = estimator.sess.run(estimator.normalized_word_embeddings)
-        estimator.doc_embeddings = estimator.sess.run(estimator.normalized_doc_embeddings)
-        # bind dictionaries
-        estimator.dictionary = json.load(open(os.path.join(path_dir, 'model_dict.json'), 'rb'))
-        reverse_dictionary = json.load(open(os.path.join(path_dir, 'model_rdict.json'), 'rb'))
-        # convert indices loaded from json back to int since json does not allow int as keys
-        estimator.reverse_dictionary = {int(key): val for key, val in reverse_dictionary.items()}
-
         return estimator
