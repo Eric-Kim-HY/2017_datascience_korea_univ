@@ -1,4 +1,4 @@
-
+#-*- coding: utf-8 -*-
 from __future__ import absolute_import
 from __future__ import print_function
 
@@ -13,20 +13,34 @@ import collections
 from itertools import compress
 import math
 import time
+from gensim.parsing.preprocessing import PorterStemmer
 
 
 # 리뷰 전처리 클래스 (구두점 제거, 텍스트 보정, 리뷰 불러오기, 데이터 준비하기)
 class preprocess():
     def __init__(self) :
-        pass
+        self.porter = PorterStemmer()
+
 
     # Preprocessing function
     def cleanText(self, corpus):
-        punctuation = ".,?!:;(){}[]\"'"
+        punctuation = "&.,?!:;(){}[–-]\"'`0123456789"
         for char in punctuation: corpus = corpus.replace(char, "")
         corpus = corpus.lower()
         corpus = corpus.split()
+        ret = []
+        for word in corpus :
+            ret.append(self.porter.stem(word))
+        return ret
+
+    def cleanText2(self, corpus):
+        punctuation = "&\n.,?!:;(){}[–-]\"'` "
+        for char in punctuation: corpus = corpus.replace(char, "")
         return corpus
+
+    def isnumalpha(self, string):
+        num_alpha = re.compile('^[a-zA-Z0-9]+$')
+        return bool(num_alpha.match(string))
 
     # 여행지 아이디, 리뷰어 아이디, 리뷰 말뭉치를 하나의 리스트에 저장
     def label_dataframe(self, df):
@@ -35,8 +49,6 @@ class preprocess():
         ret = []
         trip_ids = []; reviewer_ids = []; reviews = []
 
-        #TODO alphabet 아닌 행 모두 제거하는 작업
-        #df = df['reviews']....
         for idx, row in df.iterrows():
             temp_corpus = self.cleanText(row['review_text'])
             trip_id = row['attraction']
@@ -60,8 +72,16 @@ class preprocess():
 
     # 리뷰 파일 csv 를 불러오는 함수
     def load_review(self):
+        # csv 불러와 pandas dataframe에 저장
         path = './' + self.city + '.csv'
         raw_data = pd.read_csv(path, header=0)
+
+        # 영문이 아닌 리뷰를 걸러주기
+        data_for_idx = raw_data['review_text'].apply(self.cleanText2)
+        bool_idx = data_for_idx.apply(self.isnumalpha)
+
+        raw_data = raw_data[bool_idx]
+
         return raw_data
 
 
@@ -71,6 +91,7 @@ class trip2vec(preprocess):
                  ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
                  EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
                  OPTIMIZER, LOSS_TYPE, CONCAT, CITY):
+        self.porter = PorterStemmer()
         self.window_size = WINDOW
         self.paralell_size = PARALELL_SIZE
         self.learning_rate = LEARNING_RATE
@@ -251,10 +272,12 @@ class trip2vec(preprocess):
         st = time.time()
         data_idx = []
 
-        # 각 섹터별별 유니크한 단 길이 클래스 변수에 저장
+        # 각 섹터별별 유니크한 단어 길이 클래스 변수에 저장
         self.trip_size = len(trip_ids)
         self.id_size = len(reviewer_ids)
         self.vocabulary_size = len(reviews)
+        print("Unique trip sites : {}, reviewer ids : {}, words : {}"\
+              .format(self.trip_size, self.id_size, self.vocabulary_size))
 
         # Build trip, id, word dictionary
         self.trip_dict = self.Dict([trip_ids]).token2id
