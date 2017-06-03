@@ -313,7 +313,7 @@ class trip2vec(preprocess):
         print("Initialized")
 
         # k번 반복 학습
-        for k in self.iterations :
+        for k in range(self.iterations) :
             # set for index and calculate loss
             average_loss = 0; i = 0; total_step = len(data_idx)
             for data in data_idx :

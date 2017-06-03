@@ -1,6 +1,6 @@
 #-*- coding: utf-8 -*-
 import re
-from trip2vec_model.trip2vec import trip2vec
+from trip2vec import trip2vec
 
 ### Set Hyperparameter and settings ###
 VECTOR_SIZE = 300
