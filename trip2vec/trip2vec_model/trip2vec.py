@@ -89,7 +89,7 @@ class trip2vec(preprocess):
     def __init__(self, WINDOW, PARALELL_SIZE, LEARNING_RATE,
                  ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
                  EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
-                 OPTIMIZER, LOSS_TYPE, CONCAT, CITY):
+                 OPTIMIZER, LOSS_TYPE, CONCAT, CITY, LIMIT_BATCH):
         self.porter = PorterStemmer()
         self.window_size = WINDOW
         self.paralell_size = PARALELL_SIZE
@@ -111,6 +111,7 @@ class trip2vec(preprocess):
         self.vocabulary_size = None
         self.id_size = None
         self.vocabulary_size = None
+        self.limit_batch = LIMIT_BATCH
 
         pass
 
@@ -146,6 +147,13 @@ class trip2vec(preprocess):
         mask = [1] * span
         mask[-1] = 0
         i = 0
+
+        # Batch size 제한 여부에 따라 배치 하나 크기 결정하기
+        # batch size 작은 수로 제한할경우 오류 발생할 수 있음
+        if self.limit_batch : batch_size = batch_size
+        else : batch_size = len(word_ids)
+
+
         while i < batch_size:
             if len(set(buffer_trip)) == 1 and len(set(buffer_id)) == 1:
                 id_id = buffer_id[-1]
@@ -301,6 +309,8 @@ class trip2vec(preprocess):
         return data_idx
 
     def fit(self, data_idx):
+        print("Start training")
+        st = time.time()
         '''
         trip_ids : a list of same trip ids in one review
         id_ids : a list of same ids in one review
@@ -329,11 +339,12 @@ class trip2vec(preprocess):
                 op, l = session.run([self.optimizer, self.loss], feed_dict=feed_dict)
 
                 average_loss += l
-                if i % 200 == 0:
+                if i % 1000 == 0:
                     if i > 0:
-                        average_loss = average_loss / 200
+                        average_loss = average_loss / 1000
                     # The average loss is an estimate of the loss over the last 2000 batches.
-                    print('Learning %.3f %% Average loss at step %d: %f' % (i/total_step,i, average_loss))
+                    print('Learning %.3f%% Average loss at step %d: %f'\
+                          % (100*i/total_step,i, average_loss))
                     average_loss = 0
                 i += 1
 
@@ -341,6 +352,8 @@ class trip2vec(preprocess):
         self.word_embeddings = session.run(self.normalized_word_embeddings)
         self.id_embeddings = session.run(self.normalized_id_embeddings)
         self.trip_embeddings = session.run(self.normalized_trip_embeddings)
+
+        print("Train complete, it took {} seconds".format(time.time()-st))
 
         return self
 
