@@ -19,6 +19,7 @@ OPTIMIZER = 'Adagrad' # 'Adagrad', 'SGD'
 LOSS_TYPE = 'sampled_softmax_loss'  # 'sampled_softmax_loss'. 'nce_loss
 CONCAT = True # 워드 아이디 트립 벡터를 합쳐서 쓸지 여부
 CITY = 'paris'
+PATH = './AdvModel/' + CITY
 
 
 
@@ -42,16 +43,9 @@ if __name__ == "__main__":
 
     # 한 도시 학습 개시
     trip.initialize()
+    if LOAD_MODEL : trip.restore(PATH)
     trip.fit(data_idx = data_idx)
 
-    """
-    trip.build_batch()
+    # save tensorflow model, trip/id/word vectors and each dictionaries.
+    trip.save(PATH)
 
-    #TODO 필요없을지도 ... 다시 ref 잘 살펴보기기
-   # np.array로 각 여행지, 리뷰어아이디, 단어 벡터 생성
-    trip.build_matrix()
-
-    # tensorflow graph 생성
-    ##TODO 레퍼런스 자료 잘 갖춰져 있어 짜맞춰 넣어보기 화이팅~!!
-    
-    """

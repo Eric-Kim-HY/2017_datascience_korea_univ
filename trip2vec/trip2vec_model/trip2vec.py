@@ -8,7 +8,6 @@ import pandas as pd
 import numpy as np
 import re
 import os
-import json
 import collections
 from itertools import compress
 import math
@@ -347,26 +346,26 @@ class trip2vec(preprocess):
 
     def save(self, path):
         '''
-        To save trained model and its params.
+        To save trained model, trip/id/word vectors, trip/id/word dictionaries
         '''
-        save_path = self.saver.save(self.sess,
-                                    os.path.join(path, 'model.ckpt'))
+        # Save the tensorflow model
+        save_path = self.saver.save(self.sess, os.path.join(path, 'model.ckpt'))
         print("Model saved in file: %s" % save_path)
-        return save_path
 
-    def _restore(self, path):
+        # Save Trained vectors   //.eval() tensorflow variables to numpy array
+        np.save(os.path.join(path, 'wordvec.npy') , self.word_embeddings.eval())
+        np.save(os.path.join(path, 'idvec.npy') , self.id_embeddings.eval())
+        np.save(os.path.join(path, 'tripvec.npy') , self.trip_embeddings.eval())
+
+        # Save trip/id/word vector dictionaries ( for search )
+        np.save(os.path.join(path, 'worddict.npy') , self.trip_dict)
+        np.save(os.path.join(path, 'iddict.npy') , self.id_dict)
+        np.save(os.path.join(path, 'tripdict.npy') , self.trip_dict)
+
+        return self
+
+
+    def restore(self, path):
+        path = os.path.join(path, 'model.ckpt')
         with self.graph.as_default():
             self.saver.restore(self.sess, path)
-
-    @classmethod
-    def restore(cls, path):
-        '''
-        To restore a saved model.
-        '''
-        # load params of the model
-        path_dir = os.path.dirname(path)
-        params = json.load(open(os.path.join(path_dir, 'model_params.json'), 'rb'))
-        # init an instance of this class
-        estimator = trip2vec(**params)
-        estimator._restore(path)
-        return estimator
