@@ -89,7 +89,7 @@ class trip2vec(preprocess):
     def __init__(self, WINDOW, PARALELL_SIZE, LEARNING_RATE,
                  ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
                  EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
-                 OPTIMIZER, LOSS_TYPE, CONCAT, CITY, LIMIT_BATCH):
+                 OPTIMIZER, LOSS_TYPE, CONCAT, CITY):
         self.porter = PorterStemmer()
         self.window_size = WINDOW
         self.paralell_size = PARALELL_SIZE
@@ -111,8 +111,6 @@ class trip2vec(preprocess):
         self.vocabulary_size = None
         self.id_size = None
         self.vocabulary_size = None
-        self.limit_batch = LIMIT_BATCH
-
         pass
 
 
@@ -147,12 +145,6 @@ class trip2vec(preprocess):
         mask = [1] * span
         mask[-1] = 0
         i = 0
-
-        # Batch size 제한 여부에 따라 배치 하나 크기 결정하기
-        # batch size 작은 수로 제한할경우 오류 발생할 수 있음
-        if self.limit_batch : batch_size = batch_size
-        else : batch_size = len(word_ids)
-
 
         while i < batch_size:
             if len(set(buffer_trip)) == 1 and len(set(buffer_id)) == 1:
@@ -326,6 +318,11 @@ class trip2vec(preprocess):
             # set for index and calculate loss
             average_loss = 0; i = 0; total_step = len(data_idx)
             for data in data_idx :
+                i += 1
+                # review 길이가 10개 단어 되지 않으면 넘어가기
+                if len(data[0]) < 10 : continue
+
+
                 trip_ids = data[0]
                 id_ids = data[1]
                 word_ids = data[2]
@@ -346,7 +343,7 @@ class trip2vec(preprocess):
                     print('Learning %.3f%% Average loss at step %d: %f'\
                           % (100*i/total_step,i, average_loss))
                     average_loss = 0
-                i += 1
+
 
         # bind embedding matrices to self
         self.word_embeddings = session.run(self.normalized_word_embeddings)
