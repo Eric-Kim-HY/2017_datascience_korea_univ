@@ -3,14 +3,13 @@ import re
 from trip2vec import trip2vec
 
 ### Set Hyperparameter and settings ###
-VECTOR_SIZE = 300
 WINDOW = 10
 MIN_COUNT = 5
 PARALELL_SIZE = 8
 LEARNING_RATE = 0.025
 MIN_LEARNING_RATE = 0.025
-ITERATIONS = 1
-LOAD_MODEL = False
+ITERATIONS = 3
+LOAD_MODEL = True
 MODEL_NAME = 'TripAdvisor_trip2vec'
 NEG_SAMPLES = 64
 EMBEDDING_SIZE = 200
@@ -28,7 +27,7 @@ PATH = './AdvModel/' + CITY
 if __name__ == "__main__":
     # 클래스 불러오기
     trip = trip2vec(WINDOW, PARALELL_SIZE, LEARNING_RATE,
-                 ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
+                 ITERATIONS, MODEL_NAME, LOAD_MODEL,
                     EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
                     OPTIMIZER, LOSS_TYPE, CONCAT, CITY)
     # CSV 불러오기
@@ -43,7 +42,9 @@ if __name__ == "__main__":
 
     # 한 도시 학습 개시
     trip.initialize()
-    if LOAD_MODEL : trip.restore(PATH)
+    if LOAD_MODEL :
+        trip.restore(PATH)
+        print("Tensorflow model is loaded")
     trip.fit(data_idx = data_idx)
 
     # save tensorflow model, trip/id/word vectors and each dictionaries.

@@ -87,7 +87,7 @@ class preprocess():
 class trip2vec(preprocess):
 
     def __init__(self, WINDOW, PARALELL_SIZE, LEARNING_RATE,
-                 ITERATIONS, MODEL_NAME, LOAD_MODEL, VECTOR_SIZE,
+                 ITERATIONS, MODEL_NAME, LOAD_MODEL,
                  EMBEDDING_SIZE, NEG_SAMPLES, BATCH_SIZE,
                  OPTIMIZER, LOSS_TYPE, CONCAT, CITY):
         self.porter = PorterStemmer()
@@ -97,7 +97,6 @@ class trip2vec(preprocess):
         self.iterations = ITERATIONS
         self.model_name = MODEL_NAME
         self.load_model = LOAD_MODEL
-        self.vector_size = VECTOR_SIZE
         self.embedding_size_w = EMBEDDING_SIZE
         self.embedding_size_i = EMBEDDING_SIZE
         self.embedding_size_t = EMBEDDING_SIZE
@@ -336,9 +335,9 @@ class trip2vec(preprocess):
                 op, l = session.run([self.optimizer, self.loss], feed_dict=feed_dict)
 
                 average_loss += l
-                if i % 1000 == 0:
+                if i % 5000 == 0:
                     if i > 0:
-                        average_loss = average_loss / 1000
+                        average_loss = average_loss / 5000
                     # The average loss is an estimate of the loss over the last 2000 batches.
                     print('Learning %.3f%% Average loss at step %d: %f'\
                           % (100*i/total_step,i, average_loss))
@@ -363,9 +362,9 @@ class trip2vec(preprocess):
         print("Model saved in file: %s" % save_path)
 
         # Save Trained vectors   //.eval() tensorflow variables to numpy array
-        np.save(os.path.join(path, 'wordvec.npy') , self.word_embeddings.eval())
-        np.save(os.path.join(path, 'idvec.npy') , self.id_embeddings.eval())
-        np.save(os.path.join(path, 'tripvec.npy') , self.trip_embeddings.eval())
+        np.save(os.path.join(path, 'wordvec.npy') , self.word_embeddings)
+        np.save(os.path.join(path, 'idvec.npy') , self.id_embeddings)
+        np.save(os.path.join(path, 'tripvec.npy') , self.trip_embeddings)
 
         # Save trip/id/word vector dictionaries ( for search )
         np.save(os.path.join(path, 'worddict.npy') , self.trip_dict)
